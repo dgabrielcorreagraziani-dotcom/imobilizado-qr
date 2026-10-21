@@ -217,7 +217,7 @@ def excluir_sala(sala_id):
         total_bens = conexao.execute("""
             SELECT COUNT(*) AS total
             FROM bens WHERE sala_id = ?
-        """).fetchone()["total"]
+        """, (sala_id,)).fetchone()["total"]
 
         if total_bens > 0:
             flash("Não é possível apagar uma sala que contém bens.")
