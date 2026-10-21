@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imobilizado QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+<main class="container">
+    <div class="topbar">
+        <span></span>
+        <button class="theme-toggle" type="button" aria-label="Alternar tema">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z"/></svg>
+            <span>Usar modo escuro</span>
+        </button>
+    </div>
+    <header class="cabecalho">
+        <span class="subtitulo">CONTROLE PATRIMONIAL</span>
+        <h1>Imobilizado QR</h1>
+        <p>Gerencie salas e bens patrimoniais.</p>
+    </header>
+
+    <div class="notificacoes" aria-live="polite" aria-atomic="false">
+        {% for mensagem in get_flashed_messages() %}
+            <div class="notificacao" role="status">
+                <span>{{ mensagem }}</span>
+                <button class="fechar-notificacao" type="button" aria-label="Fechar notificação">×</button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <section class="card">
+        <h2>Pesquisar sala</h2>
+        <form action="{{ url_for('buscar_sala') }}" method="POST">
+            <input type="text" name="numero_sala" placeholder="Digite o número da sala" required>
+            <button type="submit">Pesquisar</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Cadastrar sala</h2>
+        <form action="{{ url_for('cadastrar_sala') }}" method="POST">
+            <input type="number" name="numero" placeholder="Número da sala" min="1" required>
+            <input type="text" name="nome" placeholder="Nome da sala" required>
+            <button type="submit">Cadastrar sala</button>
+        </form>
+        <p class="ajuda">O número da sala não pode se repetir.</p>
+    </section>
+
+    <section class="card">
+        <div class="secao-titulo">
+            <h2>Salas cadastradas</h2>
+            <span class="contador">{{ salas|length }}</span>
+        </div>
+
+        {% if salas %}
+            <div class="lista-salas">
+                {% for sala in salas %}
+                    <div class="sala">
+                        <div class="icone-sala">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/>
+                            </svg>
+                        </div>
+                        <div class="sala-info">
+                            <strong>{{ sala.numero }} - {{ sala.nome }}</strong>
+                            <span>{{ sala.total_bens }} bem(ns)</span>
+                        </div>
+                        <div class="acoes-sala">
+                            <a class="botao-icone botao-qr" href="{{ url_for('gerar_qr', sala_id=sala.id) }}" target="_blank" rel="noopener" title="Abrir QR Code" aria-label="Abrir QR Code da sala {{ sala.numero }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M21 14v3h-2"/><path d="M14 21h3"/><path d="M21 20v1"/>
+                                </svg>
+                            </a>
+                            <form class="form-acao-sala" action="{{ url_for('excluir_sala', sala_id=sala.id) }}" method="POST" onsubmit="return confirm('Deseja apagar esta sala? Somente salas vazias podem ser excluídas.');">
+                                <button type="submit" class="botao-icone botao-excluir" title="Apagar sala vazia" aria-label="Apagar sala {{ sala.numero }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Nenhuma sala cadastrada.</p>
+        {% endif %}
+    </section>
+
+    <section class="card card-pesquisa">
+        <div>
+            <h2>Pesquisa de bens</h2>
+            <p>Consulte e atualize patrimônio, descrição, sala e etiqueta.</p>
+        </div>
+        <a class="botao-link" href="{{ url_for('pesquisar_bens') }}">Abrir pesquisa de bens</a>
+    </section>
+</main>
+</body>
+</html>
