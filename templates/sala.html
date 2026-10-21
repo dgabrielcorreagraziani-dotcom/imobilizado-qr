@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ sala.numero }} - {{ sala.nome }} | Imobilizado QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+<main class="container">
+    <div class="topbar">
+        <a class="voltar" href="{{ url_for('inicio') }}">← Voltar</a>
+        <button class="theme-toggle" type="button" aria-label="Alternar tema">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z"/></svg>
+            <span>Usar modo escuro</span>
+        </button>
+    </div>
+
+    <div class="notificacoes" aria-live="polite" aria-atomic="false">
+        {% for mensagem in get_flashed_messages() %}
+            <div class="notificacao" role="status">
+                <span>{{ mensagem }}</span>
+                <button class="fechar-notificacao" type="button" aria-label="Fechar notificação">×</button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <header class="cabecalho">
+        <span class="subtitulo">SALA {{ sala.numero }}</span>
+        <h1>{{ sala.numero }} - {{ sala.nome }}</h1>
+        <p>{{ bens|length }} bem(ns) cadastrado(s).</p>
+    </header>
+
+    <section class="card">
+        <h2>Bens da sala</h2>
+        {% if bens %}
+            <div class="lista-bens">
+                {% for bem in bens %}
+                    <article class="item-bem">
+                        <div>
+                            <span class="subtitulo">PATRIMÔNIO</span>
+                            <h3>{{ bem.patrimonio }}</h3>
+                            <p>{{ bem.descricao }}</p>
+                        </div>
+                        {% if bem.etiquetado %}
+                            <span class="status status-sim">Etiquetado</span>
+                        {% else %}
+                            <span class="status status-nao">Sem etiqueta</span>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Nenhum bem cadastrado nesta sala.</p>
+        {% endif %}
+    </section>
+
+    <section class="card secao-qr">
+        <span class="subtitulo">ACESSO RÁPIDO</span>
+        <h2>QR Code da sala</h2>
+        <p>Escaneie para acessar esta sala.</p>
+        <div class="qrcode">
+            <img src="{{ url_for('gerar_qr', sala_id=sala.id) }}" alt="QR Code da sala {{ sala.nome }}">
+        </div>
+        <button type="button" class="botao-secundario" onclick="window.print()">Imprimir página</button>
+    </section>
+</main>
+</body>
+</html>
