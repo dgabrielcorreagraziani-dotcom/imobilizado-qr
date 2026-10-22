@@ -33,7 +33,11 @@
     </header>
 
     <section class="card">
-        <h2>Bens da sala</h2>
+        <div class="secao-titulo">
+            <h2>Bens da sala</h2>
+            <a class="botao-link" href="{{ url_for('conferencia_sala', sala_id=sala.id) }}">Conferência</a>
+        </div>
+
         {% if bens %}
             <div class="lista-bens">
                 {% for bem in bens %}
@@ -42,12 +46,18 @@
                             <span class="subtitulo">PATRIMÔNIO</span>
                             <h3>{{ bem.patrimonio }}</h3>
                             <p>{{ bem.descricao }}</p>
+                            {% if bem.estado %}<span class="texto-secundario">Estado: {{ bem.estado }}</span>{% endif %}
                         </div>
-                        {% if bem.etiquetado %}
-                            <span class="status status-sim">Etiquetado</span>
-                        {% else %}
-                            <span class="status status-nao">Sem etiqueta</span>
-                        {% endif %}
+
+                        <form class="form-status-etiqueta"
+                              action="{{ url_for('alternar_etiqueta', sala_id=sala.id, bem_id=bem.id) }}"
+                              method="POST">
+                            <button class="status status-botao {% if bem.etiquetado %}status-sim{% else %}status-nao{% endif %}"
+                                    type="submit"
+                                    aria-label="Alterar status da etiqueta de {{ bem.patrimonio }}">
+                                {% if bem.etiquetado %}Etiquetado{% else %}Sem etiqueta{% endif %}
+                            </button>
+                        </form>
                     </article>
                 {% endfor %}
             </div>
@@ -59,12 +69,26 @@
     <section class="card secao-qr">
         <span class="subtitulo">ACESSO RÁPIDO</span>
         <h2>QR Code da sala</h2>
-        <p>Escaneie para acessar esta sala.</p>
-        <div class="qrcode">
-            <img src="{{ url_for('gerar_qr', sala_id=sala.id) }}" alt="QR Code da sala {{ sala.nome }}">
-        </div>
-        <button type="button" class="botao-secundario" onclick="window.print()">Imprimir página</button>
+        <p>Escaneie com um celular conectado à mesma rede Wi-Fi para abrir esta sala.</p>
+
+        <button type="button" class="abrir-qr"
+                data-qr-url="{{ url_for('gerar_qr', sala_id=sala.id) }}"
+                data-qr-titulo="QR Code da sala {{ sala.numero }} - {{ sala.nome }}">
+            Mostrar QR Code
+        </button>
+        <button type="button" class="botao-secundario"
+                onclick="window.print()">
+            Imprimir página
+        </button>
     </section>
 </main>
+<dialog class="qrcode-dialog" aria-labelledby="titulo-modal-qr">
+    <div class="qrcode-dialog-cabecalho">
+        <h2 id="titulo-modal-qr">QR Code da sala</h2>
+        <button class="fechar-modal-qr" type="button" aria-label="Fechar">×</button>
+    </div>
+    <img class="qrcode-modal-imagem" alt="QR Code da sala">
+    <p>Escaneie com um celular conectado à mesma rede Wi-Fi.</p>
+</dialog>
 </body>
 </html>

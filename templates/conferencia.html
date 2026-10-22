@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conferência - {{ sala.numero }} - {{ sala.nome }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+<main class="container">
+    <div class="topbar">
+        <a class="voltar" href="{{ url_for('abrir_sala', sala_id=sala.id) }}">← Voltar à sala</a>
+        <button class="theme-toggle" type="button" aria-label="Alternar tema">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z"/></svg>
+            <span>Usar modo escuro</span>
+        </button>
+    </div>
+
+    <header class="cabecalho">
+        <span class="subtitulo">CONFERÊNCIA DE PATRIMÔNIO</span>
+        <h1>{{ sala.numero }} - {{ sala.nome }}</h1>
+        <p>Confira cada bem e marque os itens encontrados.</p>
+    </header>
+
+    <section class="card">
+        <div class="secao-titulo">
+            <h2>Todos os bens da sala</h2>
+            <span class="contador">{{ bens|length }}</span>
+        </div>
+
+        {% if bens %}
+            <div class="lista-bens lista-conferencia">
+                {% for bem in bens %}
+                    <article class="item-bem{% if bem.conferido %} item-conferido{% endif %}">
+                        <div class="dados-conferencia">
+                            <span class="subtitulo">{{ bem.tipo or 'BEM' }} · {{ bem.patrimonio }}</span>
+                            <h3>{{ bem.descricao }}</h3>
+                            {% if bem.estado %}<span class="texto-secundario">Estado: {{ bem.estado }}</span><br>{% endif %}
+                            {% if bem.etiquetado %}<span class="texto-secundario">Etiquetado</span>{% else %}<span class="texto-secundario">Sem etiqueta</span>{% endif %}
+                        </div>
+                        <form class="form-check" action="{{ url_for('marcar_conferencia', sala_id=sala.id, bem_id=bem.id) }}" method="POST">
+                            <label class="check-conferencia" aria-label="Marcar {{ bem.patrimonio }} como conferido">
+                                <input type="checkbox" name="conferido" value="1" {% if bem.conferido %}checked{% endif %} onchange="this.form.submit()">
+                                <span>Conferido</span>
+                            </label>
+                        </form>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Nenhum bem cadastrado nesta sala.</p>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>
