@@ -36,6 +36,29 @@
         });
     });
 
+    const modalQr = document.querySelector(".qrcode-dialog");
+    if (modalQr) {
+        const imagemQr = modalQr.querySelector(".qrcode-modal-imagem");
+        const tituloQr = modalQr.querySelector("#titulo-modal-qr");
+
+        document.querySelectorAll(".abrir-qr").forEach((botao) => {
+            botao.addEventListener("click", () => {
+                imagemQr.src = botao.dataset.qrUrl;
+                imagemQr.alt = botao.dataset.qrTitulo;
+                tituloQr.textContent = botao.dataset.qrTitulo;
+                modalQr.showModal();
+            });
+        });
+
+        modalQr.querySelector(".fechar-modal-qr").addEventListener("click", () => {
+            modalQr.close();
+        });
+
+        modalQr.addEventListener("click", (evento) => {
+            if (evento.target === modalQr) modalQr.close();
+        });
+    }
+
     function fechar(notificacao) {
         if (!notificacao || notificacao.classList.contains("saindo")) return;
         notificacao.classList.add("saindo");
