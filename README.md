@@ -47,3 +47,7 @@ Para que celulares e computadores fora da rede da empresa abram o QR, hospede o 
 O banco SQLite fica junto ao `app.py`, em `database.db`, independentemente da pasta de onde o programa for iniciado. Para aproximadamente 1.000 bens e poucos usuários simultâneos, ele é suficiente; mantenha backups regulares. Se vários usuários precisarem editar simultaneamente, planeje migrar para PostgreSQL.
 
 A importação de listas Excel (`.xlsx`/`.xls`) e PDF com texto selecionável continua disponível no gerenciamento. PDFs digitalizados como imagem não passam por OCR. Patrimônios já cadastrados são ignorados.
+
+## Histórico de ações
+
+Nas telas autenticadas, o botão **Histórico** no canto inferior direito abre as 50 ações mais recentes, como cadastro e remoção de salas e bens, importações, alterações de etiquetas, conferências e administração de usuários. Os registros ficam salvos no banco de dados; ações anteriores à criação do histórico não são incluídas.

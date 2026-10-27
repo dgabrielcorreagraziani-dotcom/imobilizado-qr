@@ -1427,3 +1427,160 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
     .indicador-carregamento { animation: none; }
     .tela-carregamento { transition-duration: 1ms; }
 }
+
+.botao-historico {
+    position: fixed;
+    z-index: 40;
+    right: 24px;
+    bottom: 24px;
+    width: 52px;
+    min-width: 52px;
+    height: 52px;
+    min-height: 50px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--accent) 78%, transparent);
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--button-text);
+    box-shadow: 0 8px 26px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.botao-historico:hover { background: var(--accent-hover); }
+.botao-historico::after {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 10px);
+    padding: 7px 11px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    content: attr(data-tooltip);
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(4px, -50%);
+    transition: opacity 140ms ease, transform 140ms ease;
+    white-space: nowrap;
+}
+
+.botao-historico:hover::after,
+.botao-historico:focus-visible::after {
+    opacity: 1;
+    transform: translate(0, -50%);
+}
+
+.botao-historico svg,
+.historico-acoes svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.historico-dialog {
+    position: fixed;
+    inset: auto 24px 86px auto;
+    display: none;
+    width: min(460px, calc(100% - 32px));
+    max-width: 100%;
+    max-height: min(620px, calc(100dvh - 118px));
+    padding: 22px;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: var(--surface);
+    color: var(--text);
+    text-align: left;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
+}
+
+.historico-dialog[open] {
+    display: block;
+    animation: dialog-arrive 180ms ease-out both;
+}
+
+.historico-dialog::backdrop {
+    background: rgba(15, 18, 24, 0.38);
+    backdrop-filter: blur(2px);
+}
+
+.historico-cabecalho,
+.historico-item-cabecalho,
+.historico-acoes {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.historico-cabecalho { margin-bottom: 14px; }
+.historico-cabecalho h2 { margin: 0 0 4px; }
+.historico-cabecalho p,
+.historico-item p { margin: 0; }
+.historico-cabecalho p,
+.historico-item time,
+.historico-usuario {
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.historico-acoes { gap: 6px; }
+.historico-acoes button {
+    width: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    padding: 0;
+    border: 1px solid var(--border);
+    background: var(--surface-muted);
+    color: var(--text);
+}
+
+.historico-acoes button:hover {
+    border-color: var(--border);
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.historico-fechar { font-size: 23px; font-weight: 450; }
+.historico-lista {
+    max-height: min(470px, calc(100dvh - 230px));
+    padding: 0 4px 0 0;
+    margin: 0;
+    overflow-y: auto;
+    list-style: none;
+    overscroll-behavior: contain;
+}
+
+.historico-item {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.historico-item:first-child { padding-top: 4px; }
+.historico-item:last-child { border-bottom: 0; }
+.historico-item-cabecalho { align-items: baseline; margin-bottom: 5px; }
+.historico-item strong { font-size: 0.9rem; }
+.historico-item p { font-size: 0.84rem; overflow-wrap: anywhere; }
+.historico-usuario { display: block; margin-top: 6px; }
+.historico-vazio { padding: 26px 8px; color: var(--muted); text-align: center; }
+.historico-erro { color: var(--danger); }
+.historico-lista[aria-busy="true"] { opacity: 0.68; }
+
+@media (max-width: 600px) {
+    .botao-historico { right: 16px; bottom: 16px; }
+    .historico-dialog {
+        inset: auto 16px 76px;
+        width: auto;
+        max-height: calc(100dvh - 102px);
+        padding: 18px;
+        border-radius: 20px;
+    }
+
+    .historico-lista { max-height: calc(100dvh - 222px); }
+}

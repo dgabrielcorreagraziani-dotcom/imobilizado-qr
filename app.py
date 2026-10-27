@@ -38,6 +38,18 @@ def conectar_banco():
     return conexao
 
 
+def registrar_acao(conexao, acao, detalhe):
+    conexao.execute("""
+        INSERT INTO historico_acoes (usuario_id, usuario, acao, detalhe)
+        VALUES (?, ?, ?, ?)
+    """, (
+        session.get("usuario_id"),
+        session.get("nome_usuario", "Usuário"),
+        acao,
+        detalhe
+    ))
+
+
 def cor_texto_botao(cor):
     valores = [int(cor[indice:indice + 2], 16) / 255 for indice in (1, 3, 5)]
     canais = [valor / 12.92 if valor <= 0.04045 else ((valor + 0.055) / 1.055) ** 2.4 for valor in valores]
@@ -176,6 +188,21 @@ def criar_banco():
                 tema TEXT NOT NULL DEFAULT 'system' CHECK (tema IN ('system', 'light', 'dark')),
                 cor_botao TEXT NOT NULL DEFAULT '#007aff'
             )
+        """)
+
+        conexao.execute("""
+            CREATE TABLE IF NOT EXISTS historico_acoes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario_id INTEGER,
+                usuario TEXT NOT NULL,
+                acao TEXT NOT NULL,
+                detalhe TEXT NOT NULL,
+                criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conexao.execute("""
+            CREATE INDEX IF NOT EXISTS idx_historico_acoes_criado_em
+            ON historico_acoes(criado_em DESC, id DESC)
         """)
 
         colunas_usuarios = {
@@ -339,6 +366,10 @@ def criar_usuario():
                 INSERT INTO usuarios (nome_usuario, senha_hash, perfil)
                 VALUES (?, ?, ?)
             """, (nome_usuario, generate_password_hash(senha), perfil))
+            registrar_acao(
+                conexao, "Usuário criado",
+                f"Conta {nome_usuario} criada com perfil {perfil}."
+            )
     except sqlite3.IntegrityError:
         flash("Esse nome de usuário já está em uso.")
         return redirect(url_for("usuarios"))
@@ -374,6 +405,11 @@ def alterar_perfil_usuario(usuario_id):
         conexao.execute(
             "UPDATE usuarios SET perfil = ? WHERE id = ?", (perfil, usuario_id)
         )
+        if alvo["perfil"] != perfil:
+            registrar_acao(
+                conexao, "Perfil alterado",
+                f"Perfil de {alvo['nome_usuario']} alterado de {alvo['perfil']} para {perfil}."
+            )
 
     flash(f"Perfil de {alvo['nome_usuario']} atualizado.")
     return redirect(url_for("usuarios"))
@@ -400,6 +436,10 @@ def excluir_usuario(usuario_id):
                 flash("O sistema precisa manter ao menos um administrador ativo.")
                 return redirect(url_for("usuarios"))
         conexao.execute("DELETE FROM usuarios WHERE id = ?", (usuario_id,))
+        registrar_acao(
+            conexao, "Usuário removido",
+            f"Conta {alvo['nome_usuario']} removida."
+        )
 
     flash(f"Usuário {alvo['nome_usuario']} removido.")
     return redirect(url_for("usuarios"))
@@ -562,6 +602,28 @@ def inicio():
     return render_template("index.html", salas=salas)
 
 
+@app.route("/api/historico")
+def api_historico():
+    with conectar_banco() as conexao:
+        registros = conexao.execute("""
+            SELECT usuario, acao, detalhe, criado_em
+            FROM historico_acoes
+            ORDER BY criado_em DESC, id DESC
+            LIMIT 50
+        """).fetchall()
+    resposta = jsonify([
+        {
+            "usuario": registro["usuario"],
+            "acao": registro["acao"],
+            "detalhe": registro["detalhe"],
+            "criado_em": registro["criado_em"]
+        }
+        for registro in registros
+    ])
+    resposta.headers["Cache-Control"] = "no-store"
+    return resposta
+
+
 @app.route("/cadastrar-sala", methods=["POST"])
 def cadastrar_sala():
     numero = request.form.get("numero", "").strip()
@@ -577,6 +639,10 @@ def cadastrar_sala():
                 INSERT INTO salas (numero, nome, token_publico)
                 VALUES (?, ?, ?)
             """, (numero, nome, secrets.token_urlsafe(24)))
+            registrar_acao(
+                conexao, "Sala cadastrada",
+                f"Sala {numero} - {nome} cadastrada."
+            )
 
         flash("Sala cadastrada com sucesso.")
 
@@ -625,6 +691,10 @@ def excluir_sala(sala_id):
         conexao.execute(
             "DELETE FROM salas WHERE id = ?", (sala_id,)
         )
+        registrar_acao(
+            conexao, "Sala removida",
+            f"Sala {sala['numero']} - {sala['nome']} removida."
+        )
 
     flash(f"Sala {sala['numero']} - {sala['nome']} apagada.")
     return redirect(url_for("inicio"))
@@ -671,17 +741,27 @@ def espelho_sala(token_publico):
 @app.route("/sala/<int:sala_id>/bem/<int:bem_id>/alternar-etiqueta", methods=["POST"])
 def alternar_etiqueta(sala_id, bem_id):
     with conectar_banco() as conexao:
+        bem = conexao.execute("""
+            SELECT patrimonio, etiquetado FROM bens
+            WHERE id = ? AND sala_id = ?
+        """, (bem_id, sala_id)).fetchone()
+        if bem is None:
+            return "Bem não encontrado nesta sala.", 404
         cursor = conexao.execute("""
             UPDATE bens
             SET etiquetado = CASE WHEN etiquetado = 1 THEN 0 ELSE 1 END
             WHERE id = ? AND sala_id = ?
         """, (bem_id, sala_id))
-        if cursor.rowcount == 0:
-            return "Bem não encontrado nesta sala.", 404
         etiquetado = conexao.execute(
             "SELECT etiquetado FROM bens WHERE id = ? AND sala_id = ?",
             (bem_id, sala_id)
         ).fetchone()["etiquetado"]
+        if cursor.rowcount and bem["etiquetado"] != etiquetado:
+            registrar_acao(
+                conexao, "Etiqueta alterada",
+                f"Patrimônio {bem['patrimonio']} marcado como "
+                f"{'etiquetado' if etiquetado else 'não etiquetado'}."
+            )
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify(etiquetado=etiquetado)
@@ -705,7 +785,9 @@ def atualizar_etiquetas_lote(sala_id):
 
     total_atualizado = 0
     with conectar_banco() as conexao:
-        sala = conexao.execute("SELECT id FROM salas WHERE id = ?", (sala_id,)).fetchone()
+        sala = conexao.execute(
+            "SELECT id, numero, nome FROM salas WHERE id = ?", (sala_id,)
+        ).fetchone()
         if sala is None:
             return "Sala não encontrada.", 404
         for inicio in range(0, len(bem_ids), 500):
@@ -716,6 +798,13 @@ def atualizar_etiquetas_lote(sala_id):
                 (int(etiquetado), sala_id, *lote)
             )
             total_atualizado += cursor.rowcount
+        if total_atualizado:
+            registrar_acao(
+                conexao, "Etiquetas atualizadas",
+                f"{total_atualizado} bem(ns) da sala {sala['numero']} - "
+                f"{sala['nome']} marcado(s) como "
+                f"{'etiquetado' if etiquetado == '1' else 'não etiquetado'}."
+            )
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify(atualizados=total_atualizado, etiquetado=int(etiquetado))
@@ -729,7 +818,7 @@ def importar_bens(sala_id):
 
     with conectar_banco() as conexao:
         sala = conexao.execute(
-            "SELECT id FROM salas WHERE id = ?", (sala_id,)
+            "SELECT id, numero, nome FROM salas WHERE id = ?", (sala_id,)
         ).fetchone()
         if sala is None:
             return "Sala não encontrada.", 404
@@ -800,6 +889,13 @@ def importar_bens(sala_id):
             except sqlite3.IntegrityError:
                 duplicados += 1
 
+        if inseridos:
+            registrar_acao(
+                conexao, "Bens importados",
+                f"{inseridos} bem(ns) importado(s) para a sala "
+                f"{sala['numero']} - {sala['nome']}."
+            )
+
     flash(
         f"Importação concluída: {inseridos} item(ns) cadastrado(s), "
         f"{duplicados} duplicado(s) ignorado(s) e {invalidos} linha(s) inválida(s)."
@@ -831,11 +927,21 @@ def marcar_conferencia(sala_id, bem_id):
     conferido = 1 if request.form.get("conferido") == "1" else 0
 
     with conectar_banco() as conexao:
+        bem = conexao.execute("""
+            SELECT patrimonio, conferido FROM bens
+            WHERE id = ? AND sala_id = ?
+        """, (bem_id, sala_id)).fetchone()
         cursor = conexao.execute("""
             UPDATE bens
             SET conferido = ?
             WHERE id = ? AND sala_id = ?
         """, (conferido, bem_id, sala_id))
+        if cursor.rowcount and bem and bem["conferido"] != conferido:
+            registrar_acao(
+                conexao, "Conferência atualizada",
+                f"Patrimônio {bem['patrimonio']} "
+                f"{'marcado como conferido' if conferido else 'removido da conferência'}."
+            )
 
     if not cursor.rowcount:
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -944,6 +1050,10 @@ def cadastrar_bem():
 
             flash("Bem cadastrado com sucesso.")
             cadastrado = True
+            registrar_acao(
+                conexao, "Bem cadastrado",
+                f"Patrimônio {patrimonio} cadastrado na sala {numero_sala}."
+            )
 
         except sqlite3.IntegrityError:
             flash("Esse número patrimonial já está cadastrado.")
@@ -980,6 +1090,9 @@ def editar_bem(bem_id):
         tipo = salvar_tipo(conexao, tipo)
         descricao = salvar_descricao(conexao, descricao)
         atualizado = False
+        bem_existente = conexao.execute(
+            "SELECT patrimonio FROM bens WHERE id = ?", (bem_id,)
+        ).fetchone()
 
         try:
             cursor = conexao.execute("""
@@ -999,6 +1112,10 @@ def editar_bem(bem_id):
             if cursor.rowcount:
                 flash("Bem atualizado com sucesso.")
                 atualizado = True
+                registrar_acao(
+                    conexao, "Bem atualizado",
+                    f"Patrimônio {bem_existente['patrimonio']} atualizado para {patrimonio}."
+                )
             else:
                 flash("Bem não encontrado.")
 
@@ -1019,7 +1136,7 @@ def excluir_bem(bem_id):
 
     with conectar_banco() as conexao:
         bem = conexao.execute("""
-            SELECT id FROM bens WHERE id = ?
+            SELECT id, patrimonio FROM bens WHERE id = ?
         """, (bem_id,)).fetchone()
 
         if bem is None:
@@ -1028,6 +1145,10 @@ def excluir_bem(bem_id):
 
         conexao.execute(
             "DELETE FROM bens WHERE id = ?", (bem_id,)
+        )
+        registrar_acao(
+            conexao, "Bem removido",
+            f"Patrimônio {bem['patrimonio']} removido."
         )
 
     flash("Bem excluído com sucesso.")

@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Imobilizado QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-loader3') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261027-loader3') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-history2') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261027-history2') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -22,9 +22,7 @@
         </a>
     </div>
     <header class="cabecalho">
-        <span class="subtitulo">CONTROLE PATRIMONIAL</span>
         <h1>Imobilizado QR</h1>
-        <p>Gerencie salas e bens patrimoniais.</p>
     </header>
 
     <div class="notificacoes" aria-live="polite" aria-atomic="false">
@@ -56,10 +54,7 @@
     </section>
 
     <section class="card card-pesquisa">
-        <div>
-            <h2>Pesquisa de bens</h2>
-            <p>Consulte e atualize patrimônio, descrição, sala e etiqueta.</p>
-        </div>
+        <h2>Pesquisa de bens</h2>
         <form class="form-pesquisa-inicial" action="{{ url_for('pesquisar_bens') }}" method="GET">
             <input type="text" name="q" placeholder="Digite patrimônio, tipo ou descrição" aria-label="Pesquisar bens" required>
             <button type="submit" aria-label="Pesquisar bens">
@@ -103,24 +98,17 @@
                 {% for sala in salas %}
                     <div class="sala">
                         <div class="icone-sala">
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                 width="22" height="22" viewBox="0 0 24 24"
-                                 fill="none" stroke="currentColor"
-                                 stroke-width="1.8" stroke-linecap="round"
-                                 stroke-linejoin="round" aria-hidden="true">
-                                <path d="M3 21h18"/>
-                                <path d="M5 21V7l8-4v18"/>
-                                <path d="M19 21V11l-6-4"/>
-                                <path d="M9 9v.01"/>
-                                <path d="M9 12v.01"/>
-                                <path d="M9 15v.01"/>
-                                <path d="M9 18v.01"/>
+                            <svg class="icone-botao" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M4 21V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v16"/>
+                                <path d="M2 21h20"/>
+                                <path d="M16 9h3a1 1 0 0 1 1 1v11"/>
+                                <path d="M8 8h4M8 12h4M8 16h4"/>
                             </svg>
                         </div>
 
                         <div class="sala-info">
                             <strong>{{ sala.numero }} - {{ sala.nome }}</strong>
-                            <span>{{ sala.total_bens }} bem(ns)</span>
+                            <span>{{ sala.total_bens }} {{ 'bem' if sala.total_bens == 1 else 'bens' }}</span>
                         </div>
 
                         <div class="acoes-sala">
@@ -132,18 +120,9 @@
                                 title="Abrir QR Code"
                                 aria-label="Abrir QR Code da sala {{ sala.numero }}"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                     width="20" height="20" viewBox="0 0 24 24"
-                                     fill="none" stroke="currentColor"
-                                     stroke-width="2" stroke-linecap="round"
-                                     stroke-linejoin="round" aria-hidden="true">
-                                    <rect x="3" y="3" width="7" height="7" rx="1"/>
-                                    <rect x="14" y="3" width="7" height="7" rx="1"/>
-                                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                                    <path d="M14 14h3v3h-3z"/>
-                                    <path d="M21 14v3h-2"/>
-                                    <path d="M14 21h3"/>
-                                    <path d="M21 20v1"/>
+                                <svg class="icone-botao" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3z"/>
+                                    <path d="M14 14h3v3h-3zM21 14v3h-2M14 21h3M21 20v1"/>
                                 </svg>
                             </button>
 
@@ -181,16 +160,9 @@
                                     title="Apagar sala vazia"
                                     aria-label="Apagar sala {{ sala.numero }}"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                         width="20" height="20" viewBox="0 0 24 24"
-                                         fill="none" stroke="currentColor"
-                                         stroke-width="1.7" stroke-linecap="round"
-                                         stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M4.5 7h15"/>
-                                        <path d="M9 7V4.75c0-.4.35-.75.75-.75h4.5c.4 0 .75.35.75.75V7"/>
-                                        <path d="m18.5 7-.85 12.15a1 1 0 0 1-1 .93h-9.3a1 1 0 0 1-1-.93L5.5 7"/>
-                                        <path d="M10 10.5v6"/>
-                                        <path d="M14 10.5v6"/>
+                                    <svg class="icone-botao" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                        <path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6"/>
+                                        <path d="M10 11v5m4-5v5"/>
                                     </svg>
                                 </button>
                             </form>

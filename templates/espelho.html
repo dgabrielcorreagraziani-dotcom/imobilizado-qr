@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="{{ 'true' if session.get('usuario_id') else 'false' }}" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="{{ 'true' if session.get('usuario_id') else 'false' }}" data-history-enabled="false" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Espelho da sala {{ sala.numero }} - {{ sala.nome }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-loader3') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261027-loader3') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-history2') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261027-history2') }}" defer></script>
 </head>
 <body>
 <main class="container">

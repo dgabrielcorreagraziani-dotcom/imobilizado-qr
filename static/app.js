@@ -87,7 +87,7 @@
     async function salvarTema(tema) {
         temaPreferido = tema;
         raiz.dataset.themePreference = tema;
-        if (autenticado) {
+        if (autenticado && raiz.dataset.historyEnabled !== "false") {
             try {
                 await fetch("/minha-conta/tema", {
                     method: "POST",
@@ -280,6 +280,123 @@
         modalQr.querySelector(".fechar-modal-qr").addEventListener("click", () => modalQr.close());
         modalQr.addEventListener("click", (evento) => {
             if (evento.target === modalQr) modalQr.close();
+        });
+    }
+
+    if (autenticado) {
+        const botaoHistorico = document.createElement("button");
+        botaoHistorico.className = "botao-historico";
+        botaoHistorico.type = "button";
+        botaoHistorico.setAttribute("aria-haspopup", "dialog");
+        botaoHistorico.setAttribute("aria-label", "Abrir histórico de ações");
+        botaoHistorico.dataset.tooltip = "Histórico";
+        botaoHistorico.innerHTML = `
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/>
+                <path d="M3 3v5h5"/>
+                <path d="M12 7v5l3 2"/>
+            </svg>
+        `;
+
+        const dialogHistorico = document.createElement("dialog");
+        dialogHistorico.className = "historico-dialog";
+        dialogHistorico.setAttribute("aria-labelledby", "titulo-historico");
+        dialogHistorico.innerHTML = `
+            <div class="historico-cabecalho">
+                <div>
+                    <h2 id="titulo-historico">Histórico de ações</h2>
+                    <p>As 50 atividades mais recentes do sistema.</p>
+                </div>
+                <div class="historico-acoes">
+                    <button class="historico-atualizar" type="button" aria-label="Atualizar histórico" title="Atualizar histórico">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.64 9A7 7 0 0 1 18 6l2 2M4 16l2 2a7 7 0 0 0 12.36-3"/></svg>
+                    </button>
+                    <button class="historico-fechar" type="button" aria-label="Fechar histórico">×</button>
+                </div>
+            </div>
+            <ol class="historico-lista" aria-live="polite" aria-busy="false"></ol>
+        `;
+
+        document.body.append(botaoHistorico, dialogHistorico);
+
+        const listaHistorico = dialogHistorico.querySelector(".historico-lista");
+        const botaoAtualizarHistorico = dialogHistorico.querySelector(".historico-atualizar");
+
+        async function carregarHistorico() {
+            listaHistorico.setAttribute("aria-busy", "true");
+            listaHistorico.replaceChildren();
+            const carregando = document.createElement("li");
+            carregando.className = "historico-vazio";
+            carregando.textContent = "Carregando histórico…";
+            listaHistorico.append(carregando);
+
+            try {
+                const resposta = await fetch("/api/historico", {
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+                if (!resposta.ok) throw new Error("Não foi possível carregar o histórico.");
+                const registros = await resposta.json();
+                if (!Array.isArray(registros)) throw new Error("Resposta inválida do histórico.");
+
+                listaHistorico.replaceChildren();
+                if (registros.length === 0) {
+                    const vazio = document.createElement("li");
+                    vazio.className = "historico-vazio";
+                    vazio.textContent = "Nenhuma ação registrada ainda.";
+                    listaHistorico.append(vazio);
+                    return;
+                }
+
+                registros.forEach((registro) => {
+                    const item = document.createElement("li");
+                    item.className = "historico-item";
+
+                    const cabecalho = document.createElement("div");
+                    cabecalho.className = "historico-item-cabecalho";
+                    const acao = document.createElement("strong");
+                    acao.textContent = registro.acao || "Ação";
+                    const horario = document.createElement("time");
+                    const data = String(registro.criado_em || "").replace(" ", "T");
+                    const dataComFuso = /(?:Z|[+-]\d{2}:\d{2})$/.test(data) ? data : `${data}Z`;
+                    const instante = new Date(dataComFuso);
+                    horario.textContent = Number.isNaN(instante.getTime())
+                        ? registro.criado_em || ""
+                        : new Intl.DateTimeFormat("pt-BR", {
+                            dateStyle: "short",
+                            timeStyle: "short"
+                        }).format(instante);
+                    if (!Number.isNaN(instante.getTime())) horario.dateTime = instante.toISOString();
+                    cabecalho.append(acao, horario);
+
+                    const detalhe = document.createElement("p");
+                    detalhe.textContent = registro.detalhe || "";
+                    const usuario = document.createElement("span");
+                    usuario.className = "historico-usuario";
+                    usuario.textContent = `Por ${registro.usuario || "Usuário"}`;
+                    item.append(cabecalho, detalhe, usuario);
+                    listaHistorico.append(item);
+                });
+            } catch (erro) {
+                listaHistorico.replaceChildren();
+                const falha = document.createElement("li");
+                falha.className = "historico-vazio historico-erro";
+                falha.textContent = erro.message;
+                listaHistorico.append(falha);
+            } finally {
+                listaHistorico.setAttribute("aria-busy", "false");
+            }
+        }
+
+        botaoHistorico.addEventListener("click", () => {
+            dialogHistorico.showModal();
+            carregarHistorico();
+        });
+        botaoAtualizarHistorico.addEventListener("click", carregarHistorico);
+        dialogHistorico.querySelector(".historico-fechar").addEventListener("click", () => {
+            dialogHistorico.close();
+        });
+        dialogHistorico.addEventListener("click", (evento) => {
+            if (evento.target === dialogHistorico) dialogHistorico.close();
         });
     }
 
