@@ -35,7 +35,7 @@
         mostrarCarregamento();
     });
 
-    window.addEventListener("pageshow", () => window.setTimeout(esconderCarregamento, 1500));
+    window.addEventListener("pageshow", () => window.setTimeout(esconderCarregamento, 800));
 
     const barraSuperior = document.querySelector(".topbar");
     let ultimaRolagem = window.scrollY;
