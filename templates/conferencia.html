@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="{{ 'true' if session.get('usuario_id') else 'false' }}" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conferência - {{ sala.numero }} - {{ sala.nome }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-loader3') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261027-loader3') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -41,7 +41,7 @@
                         </div>
                         <form class="form-check" action="{{ url_for('marcar_conferencia', sala_id=sala.id, bem_id=bem.id) }}" method="POST">
                             <label class="check-conferencia" aria-label="Marcar {{ bem.patrimonio }} como conferido">
-                                <input type="checkbox" name="conferido" value="1" {% if bem.conferido %}checked{% endif %} onchange="this.form.submit()">
+                                <input type="checkbox" name="conferido" value="1" {% if bem.conferido %}checked{% endif %} onchange="this.form.requestSubmit()">
                                 <span>Conferido</span>
                             </label>
                         </form>

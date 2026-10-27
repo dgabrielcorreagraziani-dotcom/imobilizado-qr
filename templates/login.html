@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="{{ 'true' if session.get('usuario_id') else 'false' }}" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso administrativo | Imobilizado QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-loader3') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261027-loader3') }}" defer></script>
+</head>
+<body>
+<main class="container">
+    <div class="topbar topbar-login">
+        <span></span>
+        <button class="theme-toggle" type="button" aria-label="Alternar tema">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z"/></svg>
+            <span>Usar modo escuro</span>
+        </button>
+    </div>
+    <header class="cabecalho">
+        <span class="subtitulo">ACESSO RESTRITO</span>
+        <h1>Imobilizado QR</h1>
+        <p>Entre com sua conta para acessar o inventário.</p>
+    </header>
+    <div class="notificacoes" aria-live="polite">
+        {% for mensagem in get_flashed_messages() %}
+            <div class="notificacao" role="status"><span>{{ mensagem }}</span></div>
+        {% endfor %}
+    </div>
+    <section class="card">
+        <form action="{{ url_for('login') }}" method="POST" class="form-stack">
+            <label for="usuario">Usuário</label>
+            <input id="usuario" name="usuario" autocomplete="username" required>
+            <label for="senha">Senha</label>
+            <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+            <button type="submit">Entrar</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>

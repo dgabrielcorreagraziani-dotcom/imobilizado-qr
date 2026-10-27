@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="{{ 'true' if session.get('usuario_id') else 'false' }}" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuários | Imobilizado QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-loader3') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261027-loader3') }}" defer></script>
+</head>
+<body>
+<main class="container">
+    <div class="topbar">
+        <a class="voltar" href="{{ url_for('inicio') }}">← Voltar ao inventário</a>
+        <form action="{{ url_for('sair') }}" method="POST"><button class="botao-secundario" type="submit">Sair</button></form>
+        <button class="theme-toggle" type="button" aria-label="Alternar tema">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z"/></svg>
+            <span>Usar modo escuro</span>
+        </button>
+    </div>
+    <header class="cabecalho">
+        <span class="subtitulo">ADMINISTRAÇÃO</span>
+        <h1>Usuários</h1>
+        <p>Crie contas e defina quem pode administrar usuários.</p>
+    </header>
+    <div class="notificacoes" aria-live="polite" aria-atomic="false">
+        {% for mensagem in get_flashed_messages() %}
+            <div class="notificacao" role="status"><span>{{ mensagem }}</span></div>
+        {% endfor %}
+    </div>
+    <section class="card">
+        <h2>Criar usuário</h2>
+        <form action="{{ url_for('criar_usuario') }}" method="POST" class="form-stack">
+            <label for="usuario">Nome de usuário</label>
+            <input id="usuario" name="usuario" minlength="3" maxlength="50" autocomplete="off" required>
+            <label for="senha">Senha inicial (mínimo 12 caracteres)</label>
+            <input id="senha" name="senha" type="password" minlength="12" autocomplete="new-password" required>
+            <label for="perfil">Perfil</label>
+            <select id="perfil" name="perfil" required>
+                <option value="user">User — pode usar o inventário</option>
+                <option value="admin">Admin — pode administrar usuários</option>
+            </select>
+            <button type="submit">Criar usuário</button>
+        </form>
+    </section>
+    <section class="card">
+        <div class="secao-titulo">
+            <h2>Contas cadastradas</h2>
+            <span class="contador">{{ usuarios|length }}</span>
+        </div>
+        {% if usuarios %}
+            <div class="lista-bens">
+                {% for usuario in usuarios %}
+                    <article class="item-bem">
+                        <div>
+                            <h3>{{ usuario.nome_usuario }}</h3>
+                            <span class="texto-secundario">Criado em {{ usuario.criado_em }}</span>
+                        </div>
+                        <div class="acoes-usuario">
+                            <form action="{{ url_for('alterar_perfil_usuario', usuario_id=usuario.id) }}" method="POST">
+                                <label for="perfil-{{ usuario.id }}">Perfil</label>
+                                <select id="perfil-{{ usuario.id }}" name="perfil">
+                                    <option value="user" {% if usuario.perfil == 'user' %}selected{% endif %}>User</option>
+                                    <option value="admin" {% if usuario.perfil == 'admin' %}selected{% endif %}>Admin</option>
+                                </select>
+                                <button class="botao-secundario" type="submit">Salvar perfil</button>
+                            </form>
+                            {% if usuario.id != session.get('usuario_id') %}
+                                <form action="{{ url_for('excluir_usuario', usuario_id=usuario.id) }}" method="POST" onsubmit="return confirm('Excluir a conta {{ usuario.nome_usuario }}?');">
+                                    <button class="botao-secundario" type="submit">Excluir</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Nenhum usuário cadastrado.</p>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>

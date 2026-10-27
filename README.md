@@ -1,8 +1,8 @@
 # Imobilizado QR
 
-Aplicação Flask para cadastrar salas e bens patrimoniais, pesquisar e editar itens, guardar sugestões de tipo e descrição e gerar QR codes SVG para abrir salas na rede local. Cada sala também tem uma página de conferência, onde é possível marcar e desmarcar os bens encontrados.
+Sistema Flask para controlar salas e bens patrimoniais. O QR de cada sala é gerado em SVG quando solicitado; o arquivo da imagem não é salvo. O banco guarda os dados dos bens e um token aleatório por sala, usado no endereço público do espelho. A migração adiciona esse token ao `database.db` existente sem apagar os registros.
 
-Na tela inicial, o botão de planilha ao lado do QR Code de cada sala importa listas Excel (`.xlsx`/`.xls`) ou PDF de até 8 MB diretamente naquela sala. A lista deve ter cabeçalhos para Patrimônio e Descrição; Tipo, Estado e Etiquetado são opcionais. PDFs precisam conter texto selecionável, pois PDFs digitalizados como imagem não passam por OCR. Patrimônios que já existem são ignorados.
+Ao ler o QR, a pessoa vê somente uma página de consulta dos bens daquela sala. Essa página não contém links para o gerenciamento, pesquisa, conferência ou outras salas. O restante do sistema exige login. O espelho é acessível a quem tiver o QR ou o respectivo endereço; portanto, trate as etiquetas como links de consulta compartilháveis.
 
 ## Requisitos
 
@@ -24,12 +24,26 @@ Na tela inicial, o botão de planilha ao lado do QR Code de cada sala importa li
    pip install -r requirements.txt
    ```
 
-4. Inicie o sistema:
+4. Na primeira execução, configure a conta inicial de administrador e a chave da sessão. Se `ADMIN_PASSWORD` não estiver definida, o sistema gera uma senha inicial aleatória e a mostra no console. Guarde essa senha. Depois, crie e gerencie as demais contas pela tela Usuários:
+
+   ```powershell
+   $env:ADMIN_USERNAME = "admin"
+   $env:ADMIN_PASSWORD = "defina-uma-senha-forte"
+   $env:SECRET_KEY = "defina-uma-chave-aleatoria-longa"
+   ```
+
+5. Inicie o sistema:
 
    ```powershell
    py app.py
    ```
 
-5. No próprio computador, abra http://127.0.0.1:5000. Para escanear o QR de uma sala por outro aparelho, deixe o computador e o celular na mesma rede Wi-Fi e permita o acesso do Python/Flask na rede privada do Windows, se o firewall perguntar. O QR aponta para o endereço local do computador.
+6. Abra `http://127.0.0.1:5000` e entre com a conta inicial. O administrador pode abrir **Usuários** para criar contas `user` e `admin`, mudar perfis e excluir contas. `user` pode usar o inventário; só `admin` pode administrar contas. As variáveis definidas no PowerShell valem para essa janela; configure `SECRET_KEY` no serviço de hospedagem para manter as sessões entre reinicializações.
 
-O banco SQLite é criado como database.db na pasta do projeto e está excluído do Git para não enviar os registros locais.
+## Acesso por QR entre redes diferentes
+
+Para que celulares e computadores fora da rede da empresa abram o QR, hospede o Flask em um serviço acessível pela internet, configure HTTPS e defina `PUBLIC_BASE_URL` com o endereço público, por exemplo `https://inventario.empresa.com`. O QR usará esse endereço e abrirá apenas `/espelho/<token-da-sala>`. Sem essa configuração, o QR usa o endereço pelo qual a pessoa administrativa abriu o sistema, o que é adequado para uso local, mas não torna o servidor acessível pela internet.
+
+O banco SQLite fica junto ao `app.py`, em `database.db`, independentemente da pasta de onde o programa for iniciado. Para aproximadamente 1.000 bens e poucos usuários simultâneos, ele é suficiente; mantenha backups regulares. Se vários usuários precisarem editar simultaneamente, planeje migrar para PostgreSQL.
+
+A importação de listas Excel (`.xlsx`/`.xls`) e PDF com texto selecionável continua disponível no gerenciamento. PDFs digitalizados como imagem não passam por OCR. Patrimônios já cadastrados são ignorados.

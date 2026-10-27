@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="{{ 'true' if session.get('usuario_id') else 'false' }}" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesquisa de bens | Imobilizado QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-loader3') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261027-loader3') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -35,7 +35,13 @@
                 placeholder="Número, tipo, descrição ou sala"
                 required
             >
-            <button type="submit">Pesquisar</button>
+            <button type="submit">
+                <svg class="icone-botao" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <circle cx="11" cy="11" r="7"/>
+                    <path d="m20 20-4-4"/>
+                </svg>
+                Pesquisar
+            </button>
         </form>
     </section>
 

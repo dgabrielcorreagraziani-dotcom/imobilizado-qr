@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="{{ 'true' if session.get('usuario_id') else 'false' }}" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ sala.numero }} - {{ sala.nome }} | Imobilizado QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-loader3') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261027-loader3') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -39,9 +39,38 @@
         </div>
 
         {% if bens %}
+            <div class="filtros-etiquetas">
+                <label for="filtro-etiquetas">Mostrar</label>
+                <select id="filtro-etiquetas" data-filtro-etiquetas>
+                    <option value="todos">Todos os bens</option>
+                    <option value="1">Etiquetados</option>
+                    <option value="0">Sem etiqueta</option>
+                </select>
+            </div>
+            <form id="form-etiquetas-lote" class="form-etiquetas-lote"
+                  action="{{ url_for('atualizar_etiquetas_lote', sala_id=sala.id) }}"
+                  method="POST" data-form-etiquetas>
+                <label class="selecionar-todos">
+                    <input type="checkbox" data-selecionar-todos>
+                    Selecionar todos os bens visíveis
+                </label>
+                <div class="acoes-etiquetas-lote">
+                    <span data-contagem-etiquetas aria-live="polite">0 selecionados</span>
+                    <label class="rotulo-lote" for="status-lote">Definir status</label>
+                    <select id="status-lote" name="etiquetado">
+                        <option value="1">Etiquetado</option>
+                        <option value="0">Sem etiqueta</option>
+                    </select>
+                    <button type="submit" disabled>Aplicar aos selecionados</button>
+                </div>
+                <p class="resultado-lote" data-resultado-lote aria-live="polite"></p>
+            </form>
             <div class="lista-bens">
                 {% for bem in bens %}
-                    <article class="item-bem">
+                    <article class="item-bem" data-etiquetado="{{ 1 if bem.etiquetado else 0 }}">
+                        <label class="selecao-bem">
+                            <input type="checkbox" class="checkbox-selecao-bem" form="form-etiquetas-lote" name="bem_ids" value="{{ bem.id }}" aria-label="Selecionar bem {{ bem.patrimonio }}">
+                        </label>
                         <div>
                             <span class="subtitulo">PATRIMÔNIO</span>
                             <h3>{{ bem.patrimonio }}</h3>
@@ -54,7 +83,8 @@
                               method="POST">
                             <button class="status status-botao {% if bem.etiquetado %}status-sim{% else %}status-nao{% endif %}"
                                     type="submit"
-                                    aria-label="Alterar status da etiqueta de {{ bem.patrimonio }}">
+                                    aria-label="Alterar status da etiqueta de {{ bem.patrimonio }}"
+                                    data-patrimonio="{{ bem.patrimonio }}">
                                 {% if bem.etiquetado %}Etiquetado{% else %}Sem etiqueta{% endif %}
                             </button>
                         </form>
@@ -69,7 +99,7 @@
     <section class="card secao-qr">
         <span class="subtitulo">ACESSO RÁPIDO</span>
         <h2>QR Code da sala</h2>
-        <p>Escaneie com um celular conectado à mesma rede Wi-Fi para abrir esta sala.</p>
+        <p>O QR abre somente o espelho de consulta desta sala.</p>
 
         <button type="button" class="abrir-qr"
                 data-qr-url="{{ url_for('gerar_qr', sala_id=sala.id) }}"
@@ -88,7 +118,7 @@
         <button class="fechar-modal-qr" type="button" aria-label="Fechar">×</button>
     </div>
     <img class="qrcode-modal-imagem" alt="QR Code da sala">
-    <p>Escaneie com um celular conectado à mesma rede Wi-Fi.</p>
+    <p>A consulta mostra somente os bens desta sala.</p>
 </dialog>
 </body>
 </html>

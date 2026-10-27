@@ -1,20 +1,25 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="{{ 'true' if session.get('usuario_id') else 'false' }}" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Imobilizado QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-loader3') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261027-loader3') }}" defer></script>
 </head>
 <body>
 <main class="container">
-    <div class="topbar">
-        <span></span>
-        <button class="theme-toggle" type="button" aria-label="Alternar tema">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z"/></svg>
-            <span>Usar modo escuro</span>
-        </button>
+    <div class="topbar topbar-inicial">
+        <a class="botao-link botao-usuarios"
+           href="{{ url_for('minha_conta') }}"
+           aria-label="Minha conta e preferências"
+           title="Minha conta e preferências">
+            <svg class="icone-botao" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="10" cy="7" r="4"/>
+                <path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        </a>
     </div>
     <header class="cabecalho">
         <span class="subtitulo">CONTROLE PATRIMONIAL</span>
@@ -40,7 +45,30 @@
                 placeholder="Digite o número da sala"
                 required
             >
-            <button type="submit">Pesquisar</button>
+            <button type="submit">
+                <svg class="icone-botao" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <circle cx="11" cy="11" r="7"/>
+                    <path d="m20 20-4-4"/>
+                </svg>
+                Pesquisar
+            </button>
+        </form>
+    </section>
+
+    <section class="card card-pesquisa">
+        <div>
+            <h2>Pesquisa de bens</h2>
+            <p>Consulte e atualize patrimônio, descrição, sala e etiqueta.</p>
+        </div>
+        <form class="form-pesquisa-inicial" action="{{ url_for('pesquisar_bens') }}" method="GET">
+            <input type="text" name="q" placeholder="Digite patrimônio, tipo ou descrição" aria-label="Pesquisar bens" required>
+            <button type="submit" aria-label="Pesquisar bens">
+                <svg class="icone-botao" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <circle cx="11" cy="11" r="7"/>
+                    <path d="m20 20-4-4"/>
+                </svg>
+                Pesquisar
+            </button>
         </form>
     </section>
 
@@ -174,16 +202,6 @@
             <p>Nenhuma sala cadastrada.</p>
         {% endif %}
     </section>
-
-    <section class="card card-pesquisa">
-        <div>
-            <h2>Pesquisa de bens</h2>
-            <p>Consulte e atualize patrimônio, descrição, sala e etiqueta.</p>
-        </div>
-        <a class="botao-link" href="{{ url_for('pesquisar_bens') }}">
-            Abrir pesquisa de bens
-        </a>
-    </section>
 </main>
 <dialog class="qrcode-dialog" aria-labelledby="titulo-modal-qr">
     <div class="qrcode-dialog-cabecalho">
@@ -191,7 +209,7 @@
         <button class="fechar-modal-qr" type="button" aria-label="Fechar">×</button>
     </div>
     <img class="qrcode-modal-imagem" alt="QR Code da sala">
-    <p>Escaneie com um celular conectado à mesma rede Wi-Fi.</p>
+    <p>O QR abre somente o espelho de consulta da sala.</p>
 </dialog>
 </body>
 </html>

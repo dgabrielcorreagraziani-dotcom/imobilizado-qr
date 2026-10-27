@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="{{ 'true' if session.get('usuario_id') else 'false' }}" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Espelho da sala {{ sala.numero }} - {{ sala.nome }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-loader3') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261027-loader3') }}" defer></script>
+</head>
+<body>
+<main class="container">
+    <div class="topbar topbar-publico">
+        <span></span>
+        <button class="theme-toggle" type="button" aria-label="Alternar tema">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z"/></svg>
+            <span>Usar modo escuro</span>
+        </button>
+    </div>
+    <header class="cabecalho">
+        <span class="subtitulo">ESPELHO DE BENS</span>
+        <h1>{{ sala.numero }} - {{ sala.nome }}</h1>
+        <p>{{ bens|length }} bem(ns) cadastrado(s)</p>
+    </header>
+    <section class="card">
+        <h2>Bens desta sala</h2>
+        {% if bens %}
+            <div class="lista-bens">
+                {% for bem in bens %}
+                    <article class="item-bem">
+                        <div>
+                            <span class="subtitulo">{{ bem.tipo or 'BEM' }} · PATRIMÔNIO {{ bem.patrimonio }}</span>
+                            <h3>{{ bem.descricao }}</h3>
+                            {% if bem.estado %}<span class="texto-secundario">Estado: {{ bem.estado }}</span>{% endif %}
+                        </div>
+                        <span class="status {% if bem.etiquetado %}status-sim{% else %}status-nao{% endif %}">
+                            {% if bem.etiquetado %}Etiquetado{% else %}Sem etiqueta{% endif %}
+                        </span>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Nenhum bem cadastrado nesta sala.</p>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="true" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha conta | Imobilizado QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-loader3') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261027-loader3') }}" defer></script>
+</head>
+<body>
+<main class="container">
+    <div class="topbar">
+        <a class="voltar" href="{{ url_for('inicio') }}">← Voltar ao inventário</a>
+        <form action="{{ url_for('sair') }}" method="POST">
+            <button class="botao-secundario" type="submit">Sair</button>
+        </form>
+    </div>
+
+    <header class="cabecalho">
+        <span class="subtitulo">PREFERÊNCIAS PESSOAIS</span>
+        <h1>Minha conta</h1>
+        <p>Conectado como <strong>{{ session.get('nome_usuario') }}</strong>. Ajuste a aparência do seu inventário.</p>
+    </header>
+
+    <div class="notificacoes" aria-live="polite" aria-atomic="false">
+        {% for mensagem in get_flashed_messages() %}
+            <div class="notificacao" role="status">
+                <span>{{ mensagem }}</span>
+                <button class="fechar-notificacao" type="button" aria-label="Fechar notificação">×</button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <section class="card">
+        <h2>Aparência</h2>
+        <form action="{{ url_for('minha_conta') }}" method="POST" class="form-stack preferencias-form">
+            <label for="tema">Modo de exibição</label>
+            <select id="tema" name="tema">
+                <option value="system" {% if session.get('tema_usuario', 'system') == 'system' %}selected{% endif %}>Automático (seguir dispositivo)</option>
+                <option value="light" {% if session.get('tema_usuario') == 'light' %}selected{% endif %}>Claro</option>
+                <option value="dark" {% if session.get('tema_usuario') == 'dark' %}selected{% endif %}>Escuro</option>
+            </select>
+            <p class="ajuda">A preferência é aplicada às telas da sua conta.</p>
+
+            <label for="cor-botao">Cor dos botões principais</label>
+            <div class="seletor-cor-linha">
+                <input id="cor-botao" class="seletor-cor-botao" type="color" name="cor_botao"
+                       value="{{ session.get('cor_botao', '#007aff') }}">
+                <button class="amostra-cor" type="button" aria-label="Prévia da cor escolhida">Prévia do botão</button>
+            </div>
+            <p class="ajuda">O texto do botão se ajusta automaticamente para manter a leitura.</p>
+            <button type="submit">Salvar preferências</button>
+        </form>
+    </section>
+
+    {% if session.get('perfil') == 'admin' %}
+        <section class="card">
+            <h2>Administração</h2>
+            <p>Gerencie as contas que podem acessar o inventário.</p>
+            <a class="botao-link" href="{{ url_for('usuarios') }}">Gerenciar usuários</a>
+        </section>
+    {% endif %}
+</main>
+</body>
+</html>
