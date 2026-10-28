@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from flask import Flask, render_template, request, redirect, url_for, send_file, flash, session, abort, jsonify
 import sqlite3
 import qrcode
@@ -31,11 +32,16 @@ def arquivo_acima_limite(_erro):
     return "O arquivo deve ter no máximo 8 MB.", 413
 
 
+@contextmanager
 def conectar_banco():
     conexao = sqlite3.connect(app.config["DATABASE_PATH"])
     conexao.row_factory = sqlite3.Row
     conexao.execute("PRAGMA foreign_keys = ON")
-    return conexao
+    try:
+        with conexao:
+            yield conexao
+    finally:
+        conexao.close()
 
 
 def registrar_acao(conexao, acao, detalhe):
@@ -235,7 +241,7 @@ def criar_banco():
 
 @app.before_request
 def exigir_login():
-    if request.endpoint in {"login", "espelho_sala", "static"}:
+    if request.endpoint in {"login", "criar_conta", "espelho_sala", "static"}:
         return None
 
     usuario_id = session.get("usuario_id")
@@ -266,6 +272,14 @@ def exigir_login():
         abort(403)
 
 
+def validar_credenciais_usuario(nome_usuario, senha):
+    if not re.fullmatch(r"[A-Za-z0-9._-]{3,50}", nome_usuario):
+        return "O usuário deve ter de 3 a 50 caracteres: letras, números, ponto, hífen ou sublinhado."
+    if len(senha) < 12:
+        return "A senha deve ter pelo menos 12 caracteres."
+    return None
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -287,6 +301,33 @@ def login():
         flash("Usuário ou senha incorretos.")
 
     return render_template("login.html")
+
+
+@app.route("/criar-conta", methods=["GET", "POST"])
+def criar_conta():
+    if request.method == "POST":
+        nome_usuario = request.form.get("usuario", "").strip()
+        senha = request.form.get("senha", "")
+        erro = validar_credenciais_usuario(nome_usuario, senha)
+        if erro:
+            flash(erro)
+            return redirect(url_for("criar_conta"))
+
+        try:
+            with conectar_banco() as conexao:
+                conexao.execute("""
+                    INSERT INTO usuarios (nome_usuario, senha_hash, perfil)
+                    VALUES (?, ?, 'user')
+                """, (nome_usuario, generate_password_hash(senha)))
+        except sqlite3.IntegrityError:
+            flash("Esse nome de usuário já está em uso.")
+            return redirect(url_for("criar_conta"))
+
+        flash("Conta criada como usuário. Entre com suas credenciais.")
+        return redirect(url_for("login"))
+
+    return render_template("criar_conta.html")
+
 
 @app.route("/sair", methods=["POST"])
 def sair():
@@ -350,11 +391,9 @@ def criar_usuario():
     senha = request.form.get("senha", "")
     perfil = request.form.get("perfil", "user")
 
-    if not re.fullmatch(r"[A-Za-z0-9._-]{3,50}", nome_usuario):
-        flash("O usuário deve ter de 3 a 50 caracteres: letras, números, ponto, hífen ou sublinhado.")
-        return redirect(url_for("usuarios"))
-    if len(senha) < 12:
-        flash("A senha deve ter pelo menos 12 caracteres.")
+    erro = validar_credenciais_usuario(nome_usuario, senha)
+    if erro:
+        flash(erro)
         return redirect(url_for("usuarios"))
     if perfil not in {"admin", "user"}:
         flash("Selecione um perfil válido.")
@@ -468,6 +507,26 @@ def salvar_descricao(conexao, descricao):
         """, (descricao,))
 
     return descricao
+
+
+def numero_sala_valido(numero):
+    return (
+        numero.isascii() and numero.isdigit()
+        and len(numero) <= 12 and int(numero) > 0
+    )
+
+
+def validar_dados_bem(patrimonio, descricao, numero_sala, tipo, estado):
+    if not patrimonio or not descricao or not numero_sala or not tipo:
+        return "Preencha todos os campos, incluindo o tipo."
+    if not numero_sala_valido(numero_sala):
+        return "Informe um número de sala válido."
+    if (
+        len(patrimonio) > 120 or len(descricao) > 1000
+        or len(tipo) > 120 or len(estado) > 120
+    ):
+        return "Confira os limites de caracteres dos dados do bem."
+    return None
 
 
 def normalizar_cabecalho(valor):
@@ -629,7 +688,7 @@ def cadastrar_sala():
     numero = request.form.get("numero", "").strip()
     nome = request.form.get("nome", "").strip()
 
-    if not numero.isdigit() or not nome:
+    if not numero_sala_valido(numero) or not nome:
         flash("Informe um número válido e o nome da sala.")
         return redirect(url_for("inicio"))
 
@@ -866,7 +925,7 @@ def importar_bens(sala_id):
             tipo = registro["tipo"].strip().upper()
             estado = registro["estado"].strip()
 
-            if not patrimonio or not descricao or not tipo or len(patrimonio) > 120 or len(descricao) > 1000 or len(tipo) > 120 or len(estado) > 120:
+            if validar_dados_bem(patrimonio, descricao, "1", tipo, estado):
                 invalidos += 1
                 continue
             if patrimonio.casefold() in vistos:
@@ -880,7 +939,7 @@ def importar_bens(sala_id):
                     VALUES (?, ?, ?, ?, ?, ?)
                 """, (
                     patrimonio, descricao, sala_id,
-                    1 if extensao in {".xlsx", ".xls"} or registro["etiquetado"] else 0,
+                    1 if registro["etiquetado"] else 0,
                     tipo, estado
                 ))
                 salvar_tipo(conexao, tipo)
@@ -1022,8 +1081,9 @@ def cadastrar_bem():
     estado = request.form.get("estado", "").strip()
     etiquetado = 1 if request.form.get("etiquetado") == "1" else 0
 
-    if not patrimonio or not descricao or not numero_sala or not tipo:
-        flash("Preencha todos os campos, incluindo o tipo.")
+    erro = validar_dados_bem(patrimonio, descricao, numero_sala, tipo, estado)
+    if erro:
+        flash(erro)
         return redirect(url_for("pesquisar_bens"))
 
     with conectar_banco() as conexao:
@@ -1035,8 +1095,8 @@ def cadastrar_bem():
             flash("A sala informada não existe.")
             return redirect(url_for("pesquisar_bens"))
 
-        tipo = salvar_tipo(conexao, tipo)
-        descricao = salvar_descricao(conexao, descricao)
+        tipo = tipo.strip().upper()
+        descricao = descricao.strip()
         cadastrado = False
 
         try:
@@ -1050,6 +1110,8 @@ def cadastrar_bem():
 
             flash("Bem cadastrado com sucesso.")
             cadastrado = True
+            salvar_tipo(conexao, tipo)
+            salvar_descricao(conexao, descricao)
             registrar_acao(
                 conexao, "Bem cadastrado",
                 f"Patrimônio {patrimonio} cadastrado na sala {numero_sala}."
@@ -1074,8 +1136,9 @@ def editar_bem(bem_id):
     etiquetado = 1 if request.form.get("etiquetado") == "1" else 0
     termo = request.form.get("termo", "").strip()
 
-    if not patrimonio or not descricao or not numero_sala or not tipo:
-        flash("Preencha todos os campos, incluindo o tipo.")
+    erro = validar_dados_bem(patrimonio, descricao, numero_sala, tipo, estado)
+    if erro:
+        flash(erro)
         return redirect(url_for("pesquisar_bens", q=termo))
 
     with conectar_banco() as conexao:
@@ -1087,8 +1150,8 @@ def editar_bem(bem_id):
             flash("A sala informada não existe.")
             return redirect(url_for("pesquisar_bens", q=termo))
 
-        tipo = salvar_tipo(conexao, tipo)
-        descricao = salvar_descricao(conexao, descricao)
+        tipo = tipo.strip().upper()
+        descricao = descricao.strip()
         atualizado = False
         bem_existente = conexao.execute(
             "SELECT patrimonio FROM bens WHERE id = ?", (bem_id,)
@@ -1112,6 +1175,8 @@ def editar_bem(bem_id):
             if cursor.rowcount:
                 flash("Bem atualizado com sucesso.")
                 atualizado = True
+                salvar_tipo(conexao, tipo)
+                salvar_descricao(conexao, descricao)
                 registrar_acao(
                     conexao, "Bem atualizado",
                     f"Patrimônio {bem_existente['patrimonio']} atualizado para {patrimonio}."

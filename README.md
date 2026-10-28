@@ -38,7 +38,15 @@ Ao ler o QR, a pessoa vê somente uma página de consulta dos bens daquela sala.
    py app.py
    ```
 
-6. Abra `http://127.0.0.1:5000` e entre com a conta inicial. O administrador pode abrir **Usuários** para criar contas `user` e `admin`, mudar perfis e excluir contas. `user` pode usar o inventário; só `admin` pode administrar contas. As variáveis definidas no PowerShell valem para essa janela; configure `SECRET_KEY` no serviço de hospedagem para manter as sessões entre reinicializações.
+6. Abra `http://127.0.0.1:5000` e entre com a conta inicial. A tela de login também permite criar uma conta pública, que sempre recebe o perfil `user`. O administrador pode abrir **Usuários** para criar contas `user` e `admin`, mudar perfis e excluir contas. `user` pode usar o inventário; só `admin` pode administrar contas. As variáveis definidas no PowerShell valem para essa janela; configure `SECRET_KEY` no serviço de hospedagem para manter as sessões entre reinicializações.
+
+## Testes
+
+Com as dependências instaladas, execute a suíte de regressão no PowerShell:
+
+```powershell
+python -m unittest discover -s tests -v
+```
 
 ## Acesso por QR entre redes diferentes
 

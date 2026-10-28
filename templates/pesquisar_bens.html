@@ -4,17 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesquisa de bens | Imobilizado QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-history2') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261027-history2') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-history16') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261028-history16') }}" defer></script>
 </head>
 <body>
 <main class="container">
     <div class="topbar">
-        <a class="voltar" href="{{ url_for('inicio') }}">← Voltar ao início</a>
-        <button class="theme-toggle" type="button" aria-label="Alternar tema">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z"/></svg>
-            <span>Usar modo escuro</span>
-        </button>
+        <a class="voltar" href="{{ url_for('inicio') }}" aria-label="Voltar ao início">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M11 18 5 12l6-6"/>
+                <path d="M19 12H5"/>
+            </svg>
+            <span>Voltar ao início</span>
+        </a>
     </div>
 
 
@@ -61,16 +63,6 @@
                 Os dados foram carregados abaixo para edição.
                 <button class="fechar-notificacao" type="button" aria-label="Fechar notificação">×</button>
             </div>
-        {% else %}
-            <div class="notificacao notificacao-info" role="status">
-                Foram encontrados {{ bens|length }} itens. Selecione qual deseja editar:
-                {% for bem in bens %}
-                    <a href="{{ url_for('pesquisar_bens', q=termo, bem_id=bem.id) }}">
-                        {{ bem.patrimonio }} (sala {{ bem.numero_sala }} - {{ bem.nome_sala }}){% if not loop.last %};{% endif %}
-                    </a>
-                {% endfor %}
-                <button class="fechar-notificacao" type="button" aria-label="Fechar notificação">×</button>
-            </div>
         {% endif %}
     {% elif termo %}
         <div class="notificacao notificacao-info" role="status">
@@ -79,6 +71,22 @@
         </div>
     {% endif %}
     </div>
+
+    {% if termo and bens and not bem_selecionado %}
+        <section class="card resultado-pesquisa" aria-labelledby="titulo-resultados">
+            <h2 id="titulo-resultados">Resultados da busca</h2>
+            <p>Selecione o bem que deseja editar:</p>
+            <ul>
+                {% for bem in bens %}
+                    <li>
+                        <a href="{{ url_for('pesquisar_bens', q=termo, bem_id=bem.id) }}">
+                            {{ bem.patrimonio }} — sala {{ bem.numero_sala }} - {{ bem.nome_sala }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
 
     <section class="card">
         <h2>{% if bem_selecionado %}Editar bem{% else %}Cadastrar bem{% endif %}</h2>
@@ -90,6 +98,7 @@
             <label>
                 Número patrimonial
                 <input type="text" name="patrimonio"
+                       maxlength="120"
                        value="{{ bem_selecionado.patrimonio if bem_selecionado else '' }}" required>
             </label>
 
@@ -102,6 +111,7 @@
                     data-autocomplete-list="tipos-bens"
                     placeholder="Ex.: CADEIRA"
                     autocomplete="off"
+                    maxlength="120"
                     value="{{ bem_selecionado.tipo if bem_selecionado else '' }}"
                     required
                 >
@@ -127,6 +137,7 @@
                     list="descricoes-bens"
                     data-autocomplete-list="descricoes-bens"
                     autocomplete="off"
+                    maxlength="1000"
                     value="{{ bem_selecionado.descricao if bem_selecionado else '' }}"
                     required
                 >
@@ -135,13 +146,14 @@
             <label>
                 Estado
                 <input type="text" name="estado"
+                       maxlength="120"
                        value="{{ bem_selecionado.estado if bem_selecionado else '' }}"
                        placeholder="Ex.: Excelente">
             </label>
 
             <label>
                 Número da sala
-                <input type="number" name="numero_sala" min="1"
+                <input type="number" name="numero_sala" min="1" max="999999999999"
                        value="{{ bem_selecionado.numero_sala if bem_selecionado else '' }}" required>
             </label>
 
