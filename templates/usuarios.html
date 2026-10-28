@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Usuários | Imobilizado QR</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-history16') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261028-history16') }}" defer></script>
+    <script src="{{ url_for('static', filename='app.js', v='20261028-security1') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -31,6 +32,7 @@
     <section class="card">
         <h2>Criar usuário</h2>
         <form action="{{ url_for('criar_usuario') }}" method="POST" class="form-stack">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="usuario">Nome de usuário</label>
             <input id="usuario" name="usuario" minlength="3" maxlength="50" autocomplete="off" required>
             <label for="senha">Senha inicial (mínimo 12 caracteres)</label>
@@ -58,6 +60,7 @@
                         </div>
                         <div class="acoes-usuario">
                             <form action="{{ url_for('alterar_perfil_usuario', usuario_id=usuario.id) }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <label for="perfil-{{ usuario.id }}">Perfil</label>
                                 <select id="perfil-{{ usuario.id }}" name="perfil">
                                     <option value="user" {% if usuario.perfil == 'user' %}selected{% endif %}>User</option>
@@ -67,6 +70,7 @@
                             </form>
                             {% if usuario.id != session.get('usuario_id') %}
                                 <form action="{{ url_for('excluir_usuario', usuario_id=usuario.id) }}" method="POST" onsubmit="return confirm('Excluir a conta {{ usuario.nome_usuario }}?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button class="botao-secundario" type="submit">Excluir</button>
                                 </form>
                             {% endif %}

@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Pesquisa de bens | Imobilizado QR</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-history16') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261028-history16') }}" defer></script>
+    <script src="{{ url_for('static', filename='app.js', v='20261028-security1') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -93,6 +94,7 @@
 
         <form action="{% if bem_selecionado %}{{ url_for('editar_bem', bem_id=bem_selecionado.id) }}{% else %}{{ url_for('cadastrar_bem') }}{% endif %}"
               method="POST" class="form-editor">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="termo" value="{{ termo }}">
 
             <label>

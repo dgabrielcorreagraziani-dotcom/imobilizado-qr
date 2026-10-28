@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Acesso ao inventário | Imobilizado QR</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-final1') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261028-final1') }}" defer></script>
+    <script src="{{ url_for('static', filename='app.js', v='20261028-security1') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -28,6 +29,7 @@
     </div>
     <section class="card">
         <form action="{{ url_for('login') }}" method="POST" class="form-stack">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="usuario">Usuário</label>
             <input id="usuario" name="usuario" autocomplete="username" required>
             <label for="senha">Senha</label>

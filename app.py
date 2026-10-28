@@ -1,5 +1,8 @@
 from contextlib import contextmanager
 from flask import Flask, render_template, request, redirect, url_for, send_file, flash, session, abort, jsonify
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
 import sqlite3
 import qrcode
 import qrcode.image.svg
@@ -18,9 +21,18 @@ app.config["PUBLIC_BASE_URL"] = os.environ.get("PUBLIC_BASE_URL", "").strip().rs
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = app.config["PUBLIC_BASE_URL"].startswith("https://")
+app.config["RATELIMIT_STORAGE_URI"] = os.environ.get(
+    "RATELIMIT_STORAGE_URI", "memory://"
+)
 
 PORTA = 5000
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
+CSRFProtect(app)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    storage_uri=app.config["RATELIMIT_STORAGE_URI"],
+)
 
 
 @app.errorhandler(413)
@@ -30,6 +42,11 @@ def arquivo_acima_limite(_erro):
         flash("O arquivo deve ter no máximo 8 MB.")
         return redirect(url_for("abrir_sala", sala_id=sala_id))
     return "O arquivo deve ter no máximo 8 MB.", 413
+
+
+@app.errorhandler(429)
+def muitas_tentativas(_erro):
+    return "Muitas tentativas. Aguarde um pouco e tente novamente.", 429
 
 
 @contextmanager
@@ -281,6 +298,11 @@ def validar_credenciais_usuario(nome_usuario, senha):
 
 
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit(
+    "5 per minute",
+    exempt_when=lambda: request.method == "GET",
+    deduct_when=lambda resposta: resposta.status_code != 302,
+)
 def login():
     if request.method == "POST":
         nome_usuario = request.form.get("usuario", "").strip()
@@ -304,6 +326,7 @@ def login():
 
 
 @app.route("/criar-conta", methods=["GET", "POST"])
+@limiter.limit("3 per hour", exempt_when=lambda: request.method == "GET")
 def criar_conta():
     if request.method == "POST":
         nome_usuario = request.form.get("usuario", "").strip()

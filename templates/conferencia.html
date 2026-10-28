@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Conferência - {{ sala.numero }} - {{ sala.nome }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-history16') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261028-history16') }}" defer></script>
+    <script src="{{ url_for('static', filename='app.js', v='20261028-security1') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -42,6 +43,7 @@
                             {% if bem.etiquetado %}<span class="texto-secundario">Etiquetado</span>{% else %}<span class="texto-secundario">Sem etiqueta</span>{% endif %}
                         </div>
                         <form class="form-check" action="{{ url_for('marcar_conferencia', sala_id=sala.id, bem_id=bem.id) }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <label class="check-conferencia" aria-label="Marcar {{ bem.patrimonio }} como conferido">
                                 <input type="checkbox" name="conferido" value="1" {% if bem.conferido %}checked{% endif %} onchange="this.form.requestSubmit()">
                                 <span>Conferido</span>

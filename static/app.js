@@ -1,5 +1,6 @@
 (() => {
     const raiz = document.documentElement;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
     const chaveTema = "imobilizado-qr-tema";
     let temaPreferido = raiz.dataset.themePreference || "system";
     const autenticado = raiz.dataset.authenticated === "true";
@@ -95,6 +96,7 @@
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                        "X-CSRFToken": csrfToken,
                         "X-Requested-With": "XMLHttpRequest"
                     },
                     body: new URLSearchParams({ tema })
@@ -201,7 +203,10 @@
                 const resposta = await fetch(formulario.action, {
                     method: "POST",
                     body: new FormData(formulario),
-                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                    headers: {
+                        "X-CSRFToken": csrfToken,
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
                 });
                 if (!resposta.ok) throw new Error("Não foi possível atualizar a etiqueta.");
                 const dados = await resposta.json();
@@ -223,7 +228,10 @@
             const resposta = await fetch(formularioLote.action, {
                 method: "POST",
                 body: new FormData(formularioLote),
-                headers: { "X-Requested-With": "XMLHttpRequest" }
+                headers: {
+                    "X-CSRFToken": csrfToken,
+                    "X-Requested-With": "XMLHttpRequest"
+                }
             });
             const dados = await resposta.json();
             if (!resposta.ok) throw new Error(dados.erro || "Não foi possível atualizar os bens.");
@@ -252,7 +260,10 @@
                 const resposta = await fetch(formulario.action, {
                     method: "POST",
                     body: new FormData(formulario),
-                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                    headers: {
+                        "X-CSRFToken": csrfToken,
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
                 });
                 if (!resposta.ok) throw new Error("Não foi possível salvar a conferência.");
                 const dados = await resposta.json();

@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Criar conta | Imobilizado QR</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-final1') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261028-final1') }}" defer></script>
+    <script src="{{ url_for('static', filename='app.js', v='20261028-security1') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -23,6 +24,7 @@
 
     <section class="card">
         <form action="{{ url_for('criar_conta') }}" method="POST" class="form-stack">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="usuario">Nome de usuário</label>
             <input id="usuario" name="usuario" minlength="3" maxlength="50"
                    pattern="[A-Za-z0-9._-]{3,50}" autocomplete="username" required>

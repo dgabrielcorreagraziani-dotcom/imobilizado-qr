@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ sala.numero }} - {{ sala.nome }} | Imobilizado QR</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-history16') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261028-history16') }}" defer></script>
+    <script src="{{ url_for('static', filename='app.js', v='20261028-security1') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -52,6 +53,7 @@
             <form id="form-etiquetas-lote" class="form-etiquetas-lote"
                   action="{{ url_for('atualizar_etiquetas_lote', sala_id=sala.id) }}"
                   method="POST" data-form-etiquetas>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <label class="selecionar-todos">
                     <input type="checkbox" data-selecionar-todos>
                     Selecionar todos os bens visíveis
@@ -83,6 +85,7 @@
                         <form class="form-status-etiqueta"
                               action="{{ url_for('alternar_etiqueta', sala_id=sala.id, bem_id=bem.id) }}"
                               method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button class="status status-botao {% if bem.etiquetado %}status-sim{% else %}status-nao{% endif %}"
                                     type="submit"
                                     aria-label="Alterar status da etiqueta de {{ bem.patrimonio }}"

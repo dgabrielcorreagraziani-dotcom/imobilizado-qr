@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Minha conta | Imobilizado QR</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-history16') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261028-history16') }}" defer></script>
+    <script src="{{ url_for('static', filename='app.js', v='20261028-security1') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -18,6 +19,7 @@
             <span>Voltar ao inventário</span>
         </a>
         <form action="{{ url_for('sair') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="botao-secundario" type="submit">Sair</button>
         </form>
     </div>
@@ -40,6 +42,7 @@
     <section class="card">
         <h2>Aparência</h2>
         <form action="{{ url_for('minha_conta') }}" method="POST" class="form-stack preferencias-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="tema">Modo de exibição</label>
             <select id="tema" name="tema">
                 <option value="system" {% if session.get('tema_usuario', 'system') == 'system' %}selected{% endif %}>Automático (seguir dispositivo)</option>

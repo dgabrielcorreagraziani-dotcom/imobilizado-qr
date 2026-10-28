@@ -38,7 +38,9 @@ Ao ler o QR, a pessoa vê somente uma página de consulta dos bens daquela sala.
    py app.py
    ```
 
-6. Abra `http://127.0.0.1:5000` e entre com a conta inicial. A tela de login também permite criar uma conta pública, que sempre recebe o perfil `user`. O administrador pode abrir **Usuários** para criar contas `user` e `admin`, mudar perfis e excluir contas. `user` pode usar o inventário; só `admin` pode administrar contas. As variáveis definidas no PowerShell valem para essa janela; configure `SECRET_KEY` no serviço de hospedagem para manter as sessões entre reinicializações.
+6. Abra `http://127.0.0.1:5000` e entre com a conta inicial. A tela de login também permite criar uma conta pública, que sempre recebe o perfil `user`. O administrador pode abrir **Usuários** para criar contas `user` e `admin`, mudar perfis e excluir contas. `user` pode usar o inventário; só `admin` pode administrar contas. Formulários e chamadas de alteração usam proteção CSRF; o login aceita até 5 tentativas por minuto e o cadastro público até 3 requisições por hora por endereço IP. As variáveis definidas no PowerShell valem para essa janela; configure `SECRET_KEY` no serviço de hospedagem para manter as sessões entre reinicializações.
+
+O limitador usa armazenamento em memória por padrão, suficiente para uma única instância local. Em produção com múltiplos processos/servidores, configure `RATELIMIT_STORAGE_URI` com um armazenamento compartilhado, por exemplo Redis, para que o limite seja consistente entre instâncias. Se a aplicação estiver atrás de um proxy, configure o servidor para encaminhar o endereço do cliente de forma confiável antes de depender dos limites por IP.
 
 ## Testes
 

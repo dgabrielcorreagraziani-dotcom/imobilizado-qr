@@ -1,4 +1,6 @@
 Flask>=3.0,<4.0
+Flask-Limiter>=3.8,<5.0
+Flask-WTF>=1.2,<2.0
 qrcode>=7.4,<9.0
 openpyxl>=3.1,<4.0
 xlrd>=2.0,<3.0
