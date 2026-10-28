@@ -53,20 +53,31 @@ body {
 }
 
 .container {
-    width: min(860px, calc(100% - 40px));
-    margin: 28px auto 64px;
+    width: min(900px, calc(100% - 40px));
+    margin: 34px auto 72px;
 }
 
 .topbar {
+    position: relative;
+    z-index: 20;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 40px;
+    min-height: 0;
+    padding: 0;
     margin-bottom: 24px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
+.topbar form { margin: 0; }
+
 .cabecalho {
-    margin: 0 0 30px;
+    margin: 0 0 34px;
 }
 
 h1,
@@ -347,6 +358,32 @@ a:focus-visible {
 
 .notificacao-info {
     border-color: var(--border);
+}
+
+.resultado-pesquisa p {
+    margin: -8px 0 12px;
+    color: var(--muted);
+}
+
+.resultado-pesquisa ul {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.resultado-pesquisa li a {
+    display: block;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.resultado-pesquisa li a:hover {
+    background: var(--accent-soft);
 }
 
 .notificacao a {
@@ -643,13 +680,13 @@ a:focus-visible {
 
 .card-pesquisa {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    align-items: stretch;
+    flex-direction: column;
     gap: 20px;
 }
 
 .card-pesquisa h2 {
-    margin-bottom: 7px;
+    margin-bottom: 0;
 }
 
 .card-pesquisa p {
@@ -927,7 +964,7 @@ a:focus-visible {
 }
 
 .acoes-formulario {
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     gap: 10px;
 }
@@ -1071,31 +1108,7 @@ select {
 body {
     font-family: inherit;
     line-height: 1.5;
-    transition: background-color 180ms ease, color 180ms ease;
 }
-
-.container {
-    width: min(900px, calc(100% - 40px));
-    margin: 34px auto 72px;
-}
-
-.topbar {
-    position: sticky;
-    top: 12px;
-    z-index: 20;
-    min-height: 56px;
-    padding: 8px 10px;
-    margin-bottom: 30px;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    background: color-mix(in srgb, var(--surface) 82%, transparent);
-    box-shadow: 0 5px 22px rgba(20, 24, 36, 0.045);
-    backdrop-filter: blur(18px) saturate(180%);
-    -webkit-backdrop-filter: blur(18px) saturate(180%);
-}
-
-.topbar form { margin: 0; }
-.cabecalho { margin-bottom: 34px; }
 
 h1 {
     font-size: clamp(2rem, 5vw, 2.75rem);
@@ -1195,15 +1208,63 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
 .icone-botao { width: 19px; height: 19px; }
 
 .voltar {
+    position: relative;
+    z-index: auto;
+    right: auto;
+    bottom: auto;
     display: inline-flex;
-    min-height: 42px;
+    width: 52px;
+    min-width: 52px;
+    height: 52px;
+    min-height: 52px;
+    flex: 0 0 auto;
     align-items: center;
-    padding: 8px 12px;
-    border-radius: 12px;
-    color: var(--accent);
+    justify-content: center;
+    gap: 0;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--accent) 78%, transparent);
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--button-text);
+    box-shadow: 0 8px 26px color-mix(in srgb, var(--accent) 20%, transparent);
+    text-decoration: none;
+    transition: width 180ms ease, padding 180ms ease, gap 180ms ease, background-color 150ms ease, transform 100ms ease-out;
 }
 
-.voltar:hover { background: var(--accent-soft); text-decoration: none; }
+.voltar:hover { background: var(--accent-hover); text-decoration: none; }
+.voltar:hover,
+.voltar:focus-visible {
+    width: var(--voltar-expanded-width, 180px);
+    justify-content: flex-start;
+    padding: 0 16px;
+    gap: 9px;
+}
+
+.voltar svg {
+    width: 19px;
+    height: 19px;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.voltar span {
+    flex: 0 0 auto;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-size: 0.84rem;
+    font-weight: 620;
+    transition: max-width 180ms ease, opacity 140ms ease;
+    white-space: nowrap;
+}
+
+.voltar:hover span,
+.voltar:focus-visible span { max-width: 240px; opacity: 1; }
 .icone-sala { border-radius: 14px; }
 .botao-icone { border-radius: 12px; }
 .contador, .status { border-radius: 999px; }
@@ -1228,12 +1289,11 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-:root[data-theme="dark"] .topbar { background: color-mix(in srgb, var(--surface) 84%, transparent); }
 :root[data-theme="dark"] .status-sim { background: rgba(48, 209, 88, 0.18); color: #70d98a; }
 
 @media (max-width: 600px) {
     .container { width: calc(100% - 28px); margin-top: 18px; }
-    .topbar { top: 8px; margin-bottom: 24px; }
+    .topbar { margin-bottom: 18px; }
     .card { padding: 20px; border-radius: 20px; }
     .form-stack > button { align-self: stretch; }
     .acoes-usuario, .acoes-usuario form { width: 100%; align-items: stretch; }
@@ -1249,12 +1309,8 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
     }
 }
 
-@media (prefers-reduced-transparency: reduce) {
-    .topbar { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
-}
-
 @media (prefers-contrast: more) {
-    .card, .topbar, input, select, button, .botao-link { border-width: 2px; }
+    .card, input, select, button, .botao-link { border-width: 2px; }
 }
 :root {
     --accent-hover: color-mix(in srgb, var(--accent) 84%, #000);
@@ -1356,14 +1412,15 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
 
 /* Busca inicial, retorno visual e transicoes mais suaves. */
 .topbar-inicial { justify-content: flex-end; background: transparent; border-color: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
-.form-pesquisa-inicial {
+.card.card-pesquisa > form.form-pesquisa-inicial {
     display: flex;
-    flex: 1 1 420px;
+    flex: 0 1 auto;
     align-items: center;
     gap: 10px;
+    width: 100%;
     margin: 0;
 }
-.form-pesquisa-inicial input { flex: 1 1 auto; }
+.form-pesquisa-inicial input { width: auto; flex: 1 1 auto; }
 .form-pesquisa-inicial button { flex: 0 0 auto; }
 .form-etiquetas-lote[aria-busy="true"] {
     opacity: 0.76;
@@ -1379,6 +1436,7 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
 @media (max-width: 600px) {
     .form-pesquisa-inicial,
     .form-pesquisa-inicial button { width: 100%; }
+    .form-pesquisa-inicial input { width: 100%; flex: 0 1 auto; }
 }
 @media (prefers-reduced-motion: reduce) {
     .container { animation: none; }
@@ -1386,11 +1444,6 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
 }
 
 
-.topbar { transition: transform 240ms cubic-bezier(0.2, 0.75, 0.25, 1), opacity 180ms ease; }
-.topbar.topbar-oculta { transform: translateY(calc(-100% - 20px)); opacity: 0; pointer-events: none; }
-@media (prefers-reduced-motion: reduce) {
-    .topbar { transition: none; }
-}
 .tela-carregamento {
     position: fixed;
     z-index: 99999;
@@ -1428,50 +1481,52 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
     .tela-carregamento { transition-duration: 1ms; }
 }
 
-.botao-historico {
+.acoes-flutuantes {
     position: fixed;
     z-index: 40;
     right: 24px;
     bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.botao-historico,
+.botao-conta-flutuante {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    z-index: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 52px;
     min-width: 52px;
     height: 52px;
     min-height: 50px;
     padding: 0;
+    gap: 0;
+    overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--accent) 78%, transparent);
     border-radius: 999px;
     background: var(--accent);
     color: var(--button-text);
     box-shadow: 0 8px 26px color-mix(in srgb, var(--accent) 32%, transparent);
+    text-decoration: none;
+    transition: width 180ms ease, padding 180ms ease, gap 180ms ease, background-color 150ms ease, transform 100ms ease-out;
 }
 
-.botao-historico:hover { background: var(--accent-hover); }
-.botao-historico::after {
-    position: absolute;
-    top: 50%;
-    right: calc(100% + 10px);
-    padding: 7px 11px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface);
-    color: var(--text);
-    content: attr(data-tooltip);
-    font-size: 0.82rem;
-    font-weight: 600;
-    opacity: 0;
-    pointer-events: none;
-    transform: translate(4px, -50%);
-    transition: opacity 140ms ease, transform 140ms ease;
-    white-space: nowrap;
-}
+.botao-historico:hover,
+.botao-conta-flutuante:hover { background: var(--accent-hover); }
 
-.botao-historico:hover::after,
-.botao-historico:focus-visible::after {
-    opacity: 1;
-    transform: translate(0, -50%);
-}
+.botao-historico:hover,
+.botao-historico:focus-visible,
+.botao-conta-flutuante:hover,
+.botao-conta-flutuante:focus-visible { width: 148px; padding: 0 16px; gap: 9px; }
 
 .botao-historico svg,
+.botao-conta-flutuante svg,
 .historico-acoes svg {
     width: 19px;
     height: 19px;
@@ -1481,6 +1536,31 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
     stroke-linecap: round;
     stroke-linejoin: round;
 }
+
+.botao-historico span {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-size: 0.88rem;
+    font-weight: 620;
+    transition: max-width 180ms ease, opacity 140ms ease;
+    white-space: nowrap;
+}
+
+.botao-conta-flutuante span {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-size: 0.88rem;
+    font-weight: 620;
+    transition: max-width 180ms ease, opacity 140ms ease;
+    white-space: nowrap;
+}
+
+.botao-historico:hover span,
+.botao-historico:focus-visible span { max-width: 84px; opacity: 1; }
+.botao-conta-flutuante:hover span,
+.botao-conta-flutuante:focus-visible span { max-width: 100px; opacity: 1; }
 
 .historico-dialog {
     position: fixed;
@@ -1573,7 +1653,7 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
 .historico-lista[aria-busy="true"] { opacity: 0.68; }
 
 @media (max-width: 600px) {
-    .botao-historico { right: 16px; bottom: 16px; }
+    .acoes-flutuantes { right: 16px; bottom: 16px; }
     .historico-dialog {
         inset: auto 16px 76px;
         width: auto;

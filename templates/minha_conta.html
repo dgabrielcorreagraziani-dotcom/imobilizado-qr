@@ -4,13 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha conta | Imobilizado QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-history2') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261027-history2') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-history16') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261028-history16') }}" defer></script>
 </head>
 <body>
 <main class="container">
     <div class="topbar">
-        <a class="voltar" href="{{ url_for('inicio') }}">← Voltar ao inventário</a>
+        <a class="voltar" href="{{ url_for('inicio') }}" aria-label="Voltar ao inventário">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M11 18 5 12l6-6"/>
+                <path d="M19 12H5"/>
+            </svg>
+            <span>Voltar ao inventário</span>
+        </a>
         <form action="{{ url_for('sair') }}" method="POST">
             <button class="botao-secundario" type="submit">Sair</button>
         </form>
@@ -40,7 +46,7 @@
                 <option value="light" {% if session.get('tema_usuario') == 'light' %}selected{% endif %}>Claro</option>
                 <option value="dark" {% if session.get('tema_usuario') == 'dark' %}selected{% endif %}>Escuro</option>
             </select>
-            <p class="ajuda">A preferência é aplicada às telas da sua conta.</p>
+            <p class="ajuda">A preferência é aplicada em todas as telas da sua conta.</p>
 
             <label for="cor-botao">Cor dos botões principais</label>
             <div class="seletor-cor-linha">

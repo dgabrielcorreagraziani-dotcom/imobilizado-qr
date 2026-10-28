@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="false" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar conta | Imobilizado QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-final1') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261028-final1') }}" defer></script>
+</head>
+<body>
+<main class="container">
+    <header class="cabecalho">
+        <span class="subtitulo">NOVA CONTA</span>
+        <h1>Criar conta</h1>
+        <p>As novas contas são criadas com perfil de usuário.</p>
+    </header>
+
+    <div class="notificacoes" aria-live="polite">
+        {% for mensagem in get_flashed_messages() %}
+            <div class="notificacao" role="status"><span>{{ mensagem }}</span></div>
+        {% endfor %}
+    </div>
+
+    <section class="card">
+        <form action="{{ url_for('criar_conta') }}" method="POST" class="form-stack">
+            <label for="usuario">Nome de usuário</label>
+            <input id="usuario" name="usuario" minlength="3" maxlength="50"
+                   pattern="[A-Za-z0-9._-]{3,50}" autocomplete="username" required>
+            <label for="senha">Senha (mínimo 12 caracteres)</label>
+            <input id="senha" name="senha" type="password" minlength="12"
+                   autocomplete="new-password" required>
+            <button type="submit">Criar conta</button>
+        </form>
+        <p class="ajuda"><a href="{{ url_for('login') }}">Voltar ao acesso</a></p>
+    </section>
+</main>
+</body>
+</html>

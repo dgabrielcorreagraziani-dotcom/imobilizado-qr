@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acesso administrativo | Imobilizado QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261027-history2') }}">
-    <script src="{{ url_for('static', filename='app.js', v='20261027-history2') }}" defer></script>
+    <title>Acesso ao inventário | Imobilizado QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-final1') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261028-final1') }}" defer></script>
 </head>
 <body>
 <main class="container">
@@ -17,7 +17,7 @@
         </button>
     </div>
     <header class="cabecalho">
-        <span class="subtitulo">ACESSO RESTRITO</span>
+        <span class="subtitulo">ACESSO AO INVENTÁRIO</span>
         <h1>Imobilizado QR</h1>
         <p>Entre com sua conta para acessar o inventário.</p>
     </header>
@@ -34,6 +34,8 @@
             <input id="senha" name="senha" type="password" autocomplete="current-password" required>
             <button type="submit">Entrar</button>
         </form>
+        <p class="ajuda">Ainda não tem uma conta?</p>
+        <a class="botao-link botao-secundario" href="{{ url_for('criar_conta') }}">Criar conta</a>
     </section>
 </main>
 </body>

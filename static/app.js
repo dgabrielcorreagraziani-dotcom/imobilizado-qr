@@ -37,26 +37,28 @@
 
     window.addEventListener("pageshow", () => window.setTimeout(esconderCarregamento, 800));
 
-    const barraSuperior = document.querySelector(".topbar");
-    let ultimaRolagem = window.scrollY;
-    let quadroRolagemPendente = false;
-    if (barraSuperior) {
-        window.addEventListener("scroll", () => {
-            if (quadroRolagemPendente) return;
-            quadroRolagemPendente = true;
-            window.requestAnimationFrame(() => {
-                const rolagemAtual = window.scrollY;
-                const diferenca = rolagemAtual - ultimaRolagem;
-                if (rolagemAtual < 48 || diferenca < -5) {
-                    barraSuperior.classList.remove("topbar-oculta");
-                } else if (rolagemAtual > 96 && diferenca > 7) {
-                    barraSuperior.classList.add("topbar-oculta");
-                }
-                ultimaRolagem = rolagemAtual;
-                quadroRolagemPendente = false;
-            });
-        }, { passive: true });
-    }
+    const acoesFlutuantes = document.createElement("div");
+    acoesFlutuantes.className = "acoes-flutuantes";
+    acoesFlutuantes.setAttribute("role", "group");
+    acoesFlutuantes.setAttribute("aria-label", "Ações rápidas");
+    const medidorTexto = document.createElement("canvas").getContext("2d");
+
+    document.querySelectorAll(".voltar").forEach((link) => {
+        acoesFlutuantes.append(link);
+        const rotulo = link.querySelector("span");
+        if (!rotulo || !medidorTexto) return;
+        medidorTexto.font = window.getComputedStyle(rotulo).font;
+        const larguraRotulo = medidorTexto.measureText(rotulo.textContent).width;
+        link.style.setProperty(
+            "--voltar-expanded-width",
+            `${larguraRotulo + 19 + 9 + 32 + 2}px`
+        );
+    });
+    if (acoesFlutuantes.childElementCount > 0) document.body.append(acoesFlutuantes);
+    document.querySelectorAll(".topbar").forEach((topbar) => {
+        topbar.querySelectorAll(":scope > span:empty").forEach((span) => span.remove());
+        if (topbar.childElementCount === 0) topbar.remove();
+    });
 
     function temaDoSistema() {
         return consultaSistema.matches ? "dark" : "light";
@@ -289,13 +291,26 @@
         botaoHistorico.type = "button";
         botaoHistorico.setAttribute("aria-haspopup", "dialog");
         botaoHistorico.setAttribute("aria-label", "Abrir histórico de ações");
-        botaoHistorico.dataset.tooltip = "Histórico";
         botaoHistorico.innerHTML = `
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/>
                 <path d="M3 3v5h5"/>
                 <path d="M12 7v5l3 2"/>
             </svg>
+            <span>Histórico</span>
+        `;
+
+        const botaoConta = document.createElement("a");
+        botaoConta.className = "botao-conta-flutuante";
+        botaoConta.href = "/minha-conta";
+        botaoConta.setAttribute("aria-label", "Abrir minha conta e preferências");
+        botaoConta.innerHTML = `
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="10" cy="7" r="4"/>
+                <path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>Minha conta</span>
         `;
 
         const dialogHistorico = document.createElement("dialog");
@@ -317,7 +332,8 @@
             <ol class="historico-lista" aria-live="polite" aria-busy="false"></ol>
         `;
 
-        document.body.append(botaoHistorico, dialogHistorico);
+        acoesFlutuantes.prepend(botaoConta, botaoHistorico);
+        document.body.append(acoesFlutuantes, dialogHistorico);
 
         const listaHistorico = dialogHistorico.querySelector(".historico-lista");
         const botaoAtualizarHistorico = dialogHistorico.querySelector(".historico-atualizar");
