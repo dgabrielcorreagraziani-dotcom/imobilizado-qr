@@ -38,14 +38,15 @@ class SistemaTests(unittest.TestCase):
         with self.cliente.session_transaction() as sessao:
             sessao.update(usuario_id=1, nome_usuario="admin_teste", perfil="admin")
 
-    def postar_com_csrf(self, caminho, **kwargs):
-        pagina = self.cliente.get("/login")
+    def postar_com_csrf(self, caminho, cliente=None, **kwargs):
+        cliente = cliente or self.cliente
+        pagina = cliente.get("/login")
         token = re.search(
             rb'name="csrf_token" value="([^"]+)"', pagina.data
         ).group(1).decode()
         dados = dict(kwargs.pop("data", {}))
         dados["csrf_token"] = token
-        return self.cliente.post(caminho, data=dados, **kwargs)
+        return cliente.post(caminho, data=dados, **kwargs)
 
     def test_conta_publica_e_criada_com_perfil_user(self):
         resposta = self.postar_com_csrf("/criar-conta", data={
@@ -103,6 +104,99 @@ class SistemaTests(unittest.TestCase):
     def test_cadastro_publico_aparece_na_tela_de_login(self):
         resposta = self.cliente.get("/login")
         self.assertIn(b"Criar conta", resposta.data)
+        self.assertIn(b"Esqueceu sua senha", resposta.data)
+        self.assertIn(b"Recuperar acesso", resposta.data)
+        self.assertEqual(self.cliente.get("/recuperar-senha").status_code, 200)
+
+    def test_senha_temporaria_exige_troca_antes_de_continuar(self):
+        self.autenticar_admin()
+        with sistema.conectar_banco() as conexao:
+            conexao.execute("""
+                INSERT INTO usuarios (nome_usuario, senha_hash, perfil)
+                VALUES (?, ?, 'user')
+            """, ("usuario_recuperacao", sistema.generate_password_hash("senha-antiga-segura")))
+            usuario_id = conexao.execute(
+                "SELECT id FROM usuarios WHERE nome_usuario = ?",
+                ("usuario_recuperacao",),
+            ).fetchone()["id"]
+
+        resposta = self.postar_com_csrf(
+            f"/usuarios/{usuario_id}/senha",
+            data={"senha_temporaria": "senha-temporaria-segura"},
+        )
+        self.assertEqual(resposta.status_code, 302)
+        with sistema.conectar_banco() as conexao:
+            usuario = conexao.execute(
+                "SELECT senha_hash, senha_deve_alterar FROM usuarios WHERE id = ?",
+                (usuario_id,),
+            ).fetchone()
+        self.assertTrue(sistema.check_password_hash(
+            usuario["senha_hash"], "senha-temporaria-segura"
+        ))
+        self.assertEqual(usuario["senha_deve_alterar"], 1)
+
+        cliente_usuario = sistema.app.test_client()
+        resposta_login = self.postar_com_csrf(
+            "/login",
+            cliente=cliente_usuario,
+            data={
+                "usuario": "usuario_recuperacao",
+                "senha": "senha-temporaria-segura",
+            },
+        )
+        self.assertEqual(resposta_login.status_code, 302)
+        resposta_inicio = cliente_usuario.get("/")
+        self.assertEqual(resposta_inicio.status_code, 302)
+        self.assertIn("/minha-conta/alterar-senha", resposta_inicio.location)
+
+        pagina = cliente_usuario.get("/minha-conta/alterar-senha")
+        self.assertEqual(pagina.status_code, 200)
+        token = re.search(
+            rb'name="csrf_token" value="([^"]+)"', pagina.data
+        ).group(1).decode()
+        resposta_alteracao = cliente_usuario.post(
+            "/minha-conta/alterar-senha",
+            data={
+                "csrf_token": token,
+                "senha_atual": "senha-temporaria-segura",
+                "nova_senha": "senha-nova-e-segura-123",
+                "confirmar_senha": "senha-nova-e-segura-123",
+            },
+        )
+        self.assertEqual(resposta_alteracao.status_code, 302)
+        self.assertEqual(cliente_usuario.get("/").status_code, 200)
+        with sistema.conectar_banco() as conexao:
+            usuario = conexao.execute(
+                "SELECT senha_hash, senha_deve_alterar FROM usuarios WHERE id = ?",
+                (usuario_id,),
+            ).fetchone()
+        self.assertTrue(sistema.check_password_hash(
+            usuario["senha_hash"], "senha-nova-e-segura-123"
+        ))
+        self.assertEqual(usuario["senha_deve_alterar"], 0)
+
+    def test_usuario_comum_nao_pode_redefinir_senhas(self):
+        self.postar_com_csrf("/criar-conta", data={
+            "usuario": "usuario_comum",
+            "senha": "senha-segura-123",
+        })
+        cliente_usuario = sistema.app.test_client()
+        self.postar_com_csrf(
+            "/login",
+            cliente=cliente_usuario,
+            data={
+                "usuario": "usuario_comum",
+                "senha": "senha-segura-123",
+            },
+        )
+
+        resposta = self.postar_com_csrf(
+            "/usuarios/1/senha",
+            cliente=cliente_usuario,
+            data={"senha_temporaria": "senha-temporaria-segura"},
+        )
+
+        self.assertEqual(resposta.status_code, 403)
 
     def test_importacao_excel_respeita_coluna_de_etiquetado(self):
         self.autenticar_admin()

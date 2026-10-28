@@ -44,7 +44,7 @@
 }
 
 body {
-    min-width: 320px;
+    min-width: 0;
     min-height: 100vh;
     margin: 0;
     background: var(--page);
@@ -1663,4 +1663,577 @@ label { color: var(--text); font-size: 0.9rem; font-weight: 580; }
     }
 
     .historico-lista { max-height: calc(100dvh - 222px); }
+}
+
+/* Distinctive visual identity for the inventory workspace. */
+:root {
+    color-scheme: light;
+    --page: #f3f5f2;
+    --surface: #ffffff;
+    --surface-muted: #eef2ed;
+    --text: #202925;
+    --muted: #707b73;
+    --border: #dce4dd;
+    --field: #fbfcfa;
+    --brand: var(--accent);
+    --brand-soft: var(--accent-soft);
+    --accent: #35624a;
+    --accent-hover: #284f3a;
+    --accent-soft: rgba(53, 98, 74, 0.11);
+    --button-text: #ffffff;
+    --shadow: 0 5px 18px rgba(32, 54, 41, 0.045);
+    font-family: "Segoe UI", "Aptos", sans-serif;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #171e1a;
+    --surface: #202923;
+    --surface-muted: #29352d;
+    --text: #edf2eb;
+    --muted: #a4b0a7;
+    --border: #39483e;
+    --field: #1b241e;
+    --brand: var(--accent);
+    --brand-soft: #2a3d30;
+    --accent: #7eac8a;
+    --accent-hover: #9ac5a5;
+    --accent-soft: rgba(126, 172, 138, 0.15);
+    --button-text: #142019;
+    --shadow: 0 8px 26px rgba(0, 0, 0, 0.16);
+}
+
+body {
+    background: var(--page);
+    letter-spacing: 0;
+}
+
+.container {
+    width: min(1040px, calc(100% - 48px));
+    margin-top: 34px;
+}
+
+h1,
+h2,
+h3 {
+    color: var(--text);
+}
+
+h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-family: "Segoe UI", "Aptos", sans-serif;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 720;
+    letter-spacing: -0.06em;
+}
+
+h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.subtitulo {
+    color: var(--brand);
+    font-size: 0.65rem;
+    font-weight: 750;
+    letter-spacing: 0.13em;
+}
+
+.cabecalho {
+    margin-bottom: 26px;
+}
+
+.card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+input,
+select {
+    border-color: var(--border);
+    border-radius: 11px;
+    background: var(--field);
+}
+
+input:focus,
+select:focus {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+button,
+.botao-link {
+    border-radius: 10px;
+    font-weight: 650;
+}
+
+.botao-secundario,
+.theme-toggle {
+    border-color: var(--border);
+    background: var(--surface-muted);
+    color: var(--text);
+}
+
+.contador {
+    min-width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--brand-soft);
+    color: var(--brand);
+}
+
+.sala {
+    margin: 0 0 10px;
+    padding: 14px 4px;
+    border-color: var(--border);
+    border-radius: 0;
+    background: transparent;
+    transition: background-color 160ms ease;
+}
+
+.sala:hover {
+    background: var(--surface-muted);
+}
+
+.icone-sala {
+    border-radius: 12px;
+    background: var(--brand-soft);
+    color: var(--brand);
+}
+
+.sala-info strong {
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.sala-info span {
+    font-size: 0.76rem;
+}
+
+.item-bem {
+    border-color: var(--border);
+}
+
+.editor-bem,
+.form-etiquetas-lote,
+.acoes-etiquetas-lote {
+    border-color: var(--border);
+    border-radius: 14px;
+}
+
+.notificacao {
+    border-radius: 14px;
+    background: var(--surface);
+}
+
+.pagina-inicio {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 0 16px;
+}
+
+.pagina-inicio > .cabecalho-inicio,
+.pagina-inicio > .card-lista-salas {
+    grid-column: 1 / -1;
+}
+
+.pagina-inicio > .card {
+    margin: 0 0 16px;
+    padding: 22px;
+}
+
+.pagina-inicio > .card-pesquisa {
+    gap: 0;
+}
+
+.pagina-inicio > .card-pesquisa h2 {
+    margin-bottom: 16px;
+}
+
+.cabecalho-inicio {
+    display: flex;
+    min-height: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    padding: 22px 4px 24px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.identidade-inicio {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.marca-inventario {
+    display: grid;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--brand) 24%, var(--border));
+    border-radius: 15px;
+    background: var(--brand-soft);
+    color: var(--brand);
+}
+
+.marca-inventario svg {
+    width: 27px;
+    height: 27px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.cabecalho-inicio h1 {
+    margin: 5px 0 2px;
+    font-size: clamp(1.9rem, 4vw, 2.55rem);
+    line-height: 1.08;
+}
+
+.cabecalho-inicio p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.resumo-inventario {
+    display: grid;
+    min-width: 132px;
+    gap: 2px;
+    padding: 9px 0 9px 20px;
+    border-left: 1px solid var(--border);
+}
+
+.resumo-inventario strong {
+    color: var(--text);
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.resumo-inventario > span:last-child {
+    color: var(--muted);
+    font-size: 0.75rem;
+}
+
+.pagina-inicio .card h2 {
+    margin-bottom: 16px;
+}
+
+.pagina-inicio .card > form:not(.form-importar-sala):not(.form-acao-sala) {
+    align-items: stretch;
+}
+
+.pagina-inicio .card > form > button {
+    flex: 0 0 auto;
+}
+
+.pagina-inicio .card-lista-salas {
+    padding-bottom: 16px;
+}
+
+.lista-salas {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+}
+
+.tela-acesso {
+    width: min(500px, calc(100% - 36px));
+    margin-top: clamp(36px, 9vh, 90px);
+}
+
+.tela-acesso .cabecalho-acesso {
+    margin-bottom: 22px;
+}
+
+.tela-acesso .cabecalho h1 {
+    margin-top: 12px;
+    font-size: clamp(2.2rem, 7vw, 3rem);
+}
+
+.tela-acesso .card {
+    padding: clamp(24px, 5vw, 34px);
+}
+
+.tela-acesso .card > form.form-stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+}
+
+.tela-acesso .card > form.form-stack label,
+.tela-acesso .card > form.form-stack input {
+    width: 100%;
+}
+
+.tela-acesso .card > form.form-stack label {
+    margin-top: 3px;
+}
+
+.tela-acesso .card > form.form-stack > button {
+    align-self: stretch;
+    margin-top: 8px;
+}
+
+.tela-acesso .botao-link {
+    margin-top: 8px;
+}
+
+.acoes-usuario form {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+}
+
+.qrcode-dialog,
+.historico-dialog {
+    border-color: var(--border);
+    background: var(--surface);
+    color: var(--text);
+}
+
+@media (max-width: 700px) {
+    .container {
+        width: min(100% - 28px, 560px);
+        margin-top: 24px;
+    }
+
+    .pagina-inicio {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+
+    .pagina-inicio > .cabecalho-inicio,
+    .pagina-inicio > .card-lista-salas {
+        grid-column: auto;
+    }
+
+    .cabecalho-inicio {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 14px;
+        padding: 16px 0 20px;
+    }
+
+    .cabecalho-inicio h1 {
+        font-size: clamp(1.7rem, 8vw, 2.2rem);
+    }
+
+    .resumo-inventario {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 10px 0 0;
+        border-top: 1px solid var(--border);
+        border-left: 0;
+    }
+
+    .resumo-inventario strong {
+        font-size: 1.15rem;
+    }
+
+    .pagina-inicio > .card {
+        padding: 21px;
+    }
+
+    .pagina-inicio .card > form:not(.form-importar-sala):not(.form-acao-sala) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pagina-inicio .card > form > input:not([type="hidden"]),
+    .pagina-inicio .card > form > button {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .identidade-inicio {
+        gap: 12px;
+    }
+
+    .marca-inventario {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+    }
+
+    .resumo-inventario {
+        min-width: 0;
+        padding-left: 12px;
+    }
+
+    .tela-acesso {
+        margin-top: 28px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sala { transition: none; }
+}
+
+:root {
+    --brand: #234d73;
+    --brand-soft: #e8f0f7;
+}
+
+:root[data-theme="dark"] {
+    --brand: #aac6e0;
+    --brand-soft: #293b4f;
+}
+
+.container {
+    width: min(1180px, calc(100% - 48px));
+    margin-top: 28px;
+}
+
+.pagina-inicio {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 18px;
+}
+
+.cabecalho-inicio {
+    min-height: 132px;
+    padding: 22px 26px;
+    border: 0;
+    border-left: 5px solid #a8c1d9;
+    border-radius: 6px;
+    background: #203b56;
+    color: #fff;
+}
+
+.cabecalho-inicio h1,
+.cabecalho-inicio .resumo-inventario strong {
+    color: #fff;
+}
+
+.cabecalho-inicio .subtitulo {
+    color: #d1e0ef;
+}
+
+.cabecalho-inicio p,
+.cabecalho-inicio .resumo-inventario > span:last-child {
+    color: #e6edf5;
+}
+
+.cabecalho-inicio .marca-inventario {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.cabecalho-inicio .resumo-inventario {
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
+.pagina-inicio > .card {
+    padding: 20px;
+    border-radius: 6px;
+    box-shadow: none;
+}
+
+.pagina-inicio .card h2 {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--brand);
+}
+
+.pagina-inicio .card > form:not(.form-importar-sala):not(.form-acao-sala) {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pagina-inicio .card > form > input:not([type="hidden"]) {
+    width: 100%;
+    min-width: 0;
+}
+
+.pagina-inicio .card > form > button {
+    width: 100%;
+}
+
+.pagina-inicio > .card-lista-salas {
+    padding: 20px 24px 12px;
+}
+
+.sala {
+    padding: 12px 4px;
+}
+
+.tela-acesso .cabecalho-acesso {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px;
+    border-left: 5px solid #a8c1d9;
+    border-radius: 6px;
+    background: #203b56;
+    color: #fff;
+}
+
+.tela-acesso .cabecalho-acesso h1,
+.tela-acesso .cabecalho-acesso p {
+    color: #fff;
+}
+
+.tela-acesso .cabecalho-acesso .subtitulo {
+    color: #d1e0ef;
+}
+
+.tela-acesso .cabecalho-acesso .marca-inventario {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.tela-acesso .card {
+    border-radius: 6px;
+    box-shadow: none;
+}
+
+@media (max-width: 900px) {
+    .pagina-inicio {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pagina-inicio > .card-lista-salas {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    .container {
+        width: min(100% - 28px, 560px);
+        margin-top: 18px;
+    }
+
+    .pagina-inicio {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pagina-inicio > .card-lista-salas {
+        grid-column: auto;
+    }
+
+    .cabecalho-inicio {
+        min-height: auto;
+        align-items: stretch;
+        padding: 18px;
+    }
+
+    .tela-acesso .cabecalho {
+        padding: 18px;
+    }
 }

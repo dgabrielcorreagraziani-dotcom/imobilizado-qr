@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Minha conta | Imobilizado QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-history16') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-institucional3') }}">
     <script src="{{ url_for('static', filename='app.js', v='20261028-security1') }}" defer></script>
 </head>
 <body>
@@ -60,6 +60,12 @@
             <p class="ajuda">O texto do botão se ajusta automaticamente para manter a leitura.</p>
             <button type="submit">Salvar preferências</button>
         </form>
+    </section>
+
+    <section class="card">
+        <h2>Segurança</h2>
+        <p>Altere a senha da sua conta.</p>
+        <a class="botao-link botao-secundario" href="{{ url_for('alterar_senha_propria') }}">Alterar senha</a>
     </section>
 
     {% if session.get('perfil') == 'admin' %}

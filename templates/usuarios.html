@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Usuários | Imobilizado QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-history16') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-institucional3') }}">
     <script src="{{ url_for('static', filename='app.js', v='20261028-security1') }}" defer></script>
 </head>
 <body>
@@ -50,6 +50,7 @@
             <h2>Contas cadastradas</h2>
             <span class="contador">{{ usuarios|length }}</span>
         </div>
+        <p class="ajuda">Compartilhe a senha temporária por um canal seguro. A pessoa terá que alterá-la ao entrar.</p>
         {% if usuarios %}
             <div class="lista-bens">
                 {% for usuario in usuarios %}
@@ -67,6 +68,13 @@
                                     <option value="admin" {% if usuario.perfil == 'admin' %}selected{% endif %}>Admin</option>
                                 </select>
                                 <button class="botao-secundario" type="submit">Salvar perfil</button>
+                            </form>
+                            <form action="{{ url_for('redefinir_senha_usuario', usuario_id=usuario.id) }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <label for="senha-temporaria-{{ usuario.id }}">Nova senha temporária</label>
+                                <input id="senha-temporaria-{{ usuario.id }}" name="senha_temporaria"
+                                       type="password" minlength="12" autocomplete="new-password" required>
+                                <button class="botao-secundario" type="submit">Redefinir senha</button>
                             </form>
                             {% if usuario.id != session.get('usuario_id') %}
                                 <form action="{{ url_for('excluir_usuario', usuario_id=usuario.id) }}" method="POST" onsubmit="return confirm('Excluir a conta {{ usuario.nome_usuario }}?');">

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="false">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar senha | Imobilizado QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-institucional3') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261028-security2') }}" defer></script>
+</head>
+<body>
+<main class="container tela-acesso">
+    <header class="cabecalho">
+        <span class="subtitulo">ACESSO AO INVENTÁRIO</span>
+        <h1>Recuperar senha</h1>
+        <p>Por segurança, a redefinição é feita pelo administrador do inventário.</p>
+    </header>
+
+    <section class="card">
+        <p>Peça ao administrador uma senha temporária. Ao entrar com ela, você precisará criar uma senha nova antes de continuar.</p>
+        <a class="botao-link" href="{{ url_for('login') }}">Voltar ao login</a>
+    </section>
+</main>
+</body>
+</html>

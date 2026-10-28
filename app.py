@@ -209,7 +209,8 @@ def criar_banco():
                 ativo INTEGER NOT NULL DEFAULT 1,
                 criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 tema TEXT NOT NULL DEFAULT 'system' CHECK (tema IN ('system', 'light', 'dark')),
-                cor_botao TEXT NOT NULL DEFAULT '#007aff'
+                cor_botao TEXT NOT NULL DEFAULT '#007aff',
+                senha_deve_alterar INTEGER NOT NULL DEFAULT 0
             )
         """)
 
@@ -235,6 +236,10 @@ def criar_banco():
             conexao.execute("ALTER TABLE usuarios ADD COLUMN tema TEXT NOT NULL DEFAULT 'system'")
         if "cor_botao" not in colunas_usuarios:
             conexao.execute("ALTER TABLE usuarios ADD COLUMN cor_botao TEXT NOT NULL DEFAULT '#007aff'")
+        if "senha_deve_alterar" not in colunas_usuarios:
+            conexao.execute(
+                "ALTER TABLE usuarios ADD COLUMN senha_deve_alterar INTEGER NOT NULL DEFAULT 0"
+            )
         total_usuarios = conexao.execute(
             "SELECT COUNT(*) AS total FROM usuarios"
         ).fetchone()["total"]
@@ -258,7 +263,9 @@ def criar_banco():
 
 @app.before_request
 def exigir_login():
-    if request.endpoint in {"login", "criar_conta", "espelho_sala", "static"}:
+    if request.endpoint in {
+        "login", "criar_conta", "recuperar_senha", "espelho_sala", "static"
+    }:
         return None
 
     usuario_id = session.get("usuario_id")
@@ -267,7 +274,8 @@ def exigir_login():
 
     with conectar_banco() as conexao:
         usuario = conexao.execute("""
-            SELECT id, nome_usuario, perfil, ativo, tema, cor_botao
+            SELECT id, nome_usuario, perfil, ativo, tema, cor_botao,
+                   senha_deve_alterar
             FROM usuarios WHERE id = ?
         """, (usuario_id,)).fetchone()
 
@@ -277,14 +285,20 @@ def exigir_login():
 
     session["nome_usuario"] = usuario["nome_usuario"]
     session["perfil"] = usuario["perfil"]
+    session["senha_deve_alterar"] = bool(usuario["senha_deve_alterar"])
     session["tema_usuario"] = usuario["tema"] if usuario["tema"] in {"system", "light", "dark"} else "system"
     cor_botao = usuario["cor_botao"] or "#007aff"
     if not re.fullmatch(r"#[0-9A-Fa-f]{6}", cor_botao):
         cor_botao = "#007aff"
     session["cor_botao"] = cor_botao.lower()
     session["cor_botao_texto"] = cor_texto_botao(cor_botao)
+    if session["senha_deve_alterar"] and request.endpoint not in {
+        "alterar_senha_propria", "sair", "static"
+    }:
+        return redirect(url_for("alterar_senha_propria"))
     if request.endpoint in {
-        "usuarios", "criar_usuario", "alterar_perfil_usuario", "excluir_usuario"
+        "usuarios", "criar_usuario", "alterar_perfil_usuario",
+        "excluir_usuario", "redefinir_senha_usuario"
     } and usuario["perfil"] != "admin":
         abort(403)
 
@@ -309,7 +323,7 @@ def login():
         senha = request.form.get("senha", "")
         with conectar_banco() as conexao:
             usuario = conexao.execute("""
-                SELECT id, nome_usuario, senha_hash, perfil
+                SELECT id, nome_usuario, senha_hash, perfil, senha_deve_alterar
                 FROM usuarios
                 WHERE nome_usuario = ? COLLATE NOCASE AND ativo = 1
             """, (nome_usuario,)).fetchone()
@@ -319,10 +333,16 @@ def login():
             session["usuario_id"] = usuario["id"]
             session["nome_usuario"] = usuario["nome_usuario"]
             session["perfil"] = usuario["perfil"]
+            session["senha_deve_alterar"] = bool(usuario["senha_deve_alterar"])
             return redirect(url_for("inicio"))
         flash("Usuário ou senha incorretos.")
 
     return render_template("login.html")
+
+
+@app.route("/recuperar-senha")
+def recuperar_senha():
+    return render_template("recuperar_senha.html")
 
 
 @app.route("/criar-conta", methods=["GET", "POST"])
@@ -350,6 +370,49 @@ def criar_conta():
         return redirect(url_for("login"))
 
     return render_template("criar_conta.html")
+
+
+@app.route("/minha-conta/alterar-senha", methods=["GET", "POST"])
+def alterar_senha_propria():
+    if request.method == "POST":
+        senha_atual = request.form.get("senha_atual", "")
+        nova_senha = request.form.get("nova_senha", "")
+        confirmar_senha = request.form.get("confirmar_senha", "")
+        usuario_id = session["usuario_id"]
+
+        with conectar_banco() as conexao:
+            usuario = conexao.execute(
+                "SELECT nome_usuario, senha_hash FROM usuarios WHERE id = ?",
+                (usuario_id,),
+            ).fetchone()
+            if not check_password_hash(usuario["senha_hash"], senha_atual):
+                flash("A senha atual está incorreta.")
+                return redirect(url_for("alterar_senha_propria"))
+            if len(nova_senha) < 12:
+                flash("A nova senha deve ter pelo menos 12 caracteres.")
+                return redirect(url_for("alterar_senha_propria"))
+            if nova_senha != confirmar_senha:
+                flash("A confirmação da nova senha não confere.")
+                return redirect(url_for("alterar_senha_propria"))
+            if check_password_hash(usuario["senha_hash"], nova_senha):
+                flash("Escolha uma senha diferente da atual.")
+                return redirect(url_for("alterar_senha_propria"))
+
+            conexao.execute("""
+                UPDATE usuarios
+                SET senha_hash = ?, senha_deve_alterar = 0
+                WHERE id = ?
+            """, (generate_password_hash(nova_senha), usuario_id))
+            registrar_acao(
+                conexao, "Senha alterada",
+                f"Senha da conta {usuario['nome_usuario']} alterada."
+            )
+
+        session["senha_deve_alterar"] = False
+        flash("Senha atualizada com sucesso.")
+        return redirect(url_for("minha_conta"))
+
+    return render_template("alterar_senha.html")
 
 
 @app.route("/sair", methods=["POST"])
@@ -504,6 +567,39 @@ def excluir_usuario(usuario_id):
         )
 
     flash(f"Usuário {alvo['nome_usuario']} removido.")
+    return redirect(url_for("usuarios"))
+
+
+@app.route("/usuarios/<int:usuario_id>/senha", methods=["POST"])
+def redefinir_senha_usuario(usuario_id):
+    senha_temporaria = request.form.get("senha_temporaria", "")
+    if len(senha_temporaria) < 12:
+        flash("A senha temporária deve ter pelo menos 12 caracteres.")
+        return redirect(url_for("usuarios"))
+
+    with conectar_banco() as conexao:
+        usuario = conexao.execute(
+            "SELECT nome_usuario FROM usuarios WHERE id = ?", (usuario_id,)
+        ).fetchone()
+        if usuario is None:
+            flash("Usuário não encontrado.")
+            return redirect(url_for("usuarios"))
+
+        conexao.execute("""
+            UPDATE usuarios
+            SET senha_hash = ?, senha_deve_alterar = 1
+            WHERE id = ?
+        """, (generate_password_hash(senha_temporaria), usuario_id))
+        registrar_acao(
+            conexao, "Senha redefinida",
+            f"Senha temporária definida para {usuario['nome_usuario']}; "
+            "a conta deverá alterá-la no próximo acesso."
+        )
+
+    flash(
+        f"Senha temporária definida para {usuario['nome_usuario']}. "
+        "Entregue-a à pessoa por um canal seguro; ela terá que alterá-la ao entrar."
+    )
     return redirect(url_for("usuarios"))
 
 

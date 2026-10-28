@@ -5,13 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Imobilizado QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-history16') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-institucional3') }}">
     <script src="{{ url_for('static', filename='app.js', v='20261028-security1') }}" defer></script>
 </head>
 <body>
-<main class="container">
-    <header class="cabecalho">
-        <h1>Imobilizado QR</h1>
+<main class="container pagina-inicio">
+    <header class="cabecalho cabecalho-inicio">
+        <div class="identidade-inicio">
+            <span class="marca-inventario" aria-hidden="true">
+                <svg viewBox="0 0 32 32" focusable="false">
+                    <path d="M5 5h9v9H5zM18 5h9v9h-9zM5 18h9v9H5z"/>
+                    <path d="M19 19h3v3h-3zM27 18v4h-4M18 27h4M27 25v2"/>
+                </svg>
+            </span>
+            <div>
+                <span class="subtitulo">GESTÃO PATRIMONIAL</span>
+                <h1>Imobilizado QR</h1>
+                <p>Salas, bens e etiquetas em um só lugar.</p>
+            </div>
+        </div>
+        <div class="resumo-inventario">
+            <span class="subtitulo">ESPAÇOS</span>
+            <strong>{{ salas|length }}</strong>
+            <span>{{ 'sala cadastrada' if salas|length == 1 else 'salas cadastradas' }}</span>
+        </div>
     </header>
 
     <div class="notificacoes" aria-live="polite" aria-atomic="false">
@@ -23,7 +40,7 @@
         {% endfor %}
     </div>
 
-    <section class="card">
+    <section class="card card-pesquisar-sala">
         <h2>Pesquisar sala</h2>
         <form action="{{ url_for('buscar_sala') }}" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -60,7 +77,7 @@
         </form>
     </section>
 
-    <section class="card">
+    <section class="card card-cadastrar-sala">
         <h2>Cadastrar sala</h2>
         <form action="{{ url_for('cadastrar_sala') }}" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -82,7 +99,7 @@
         </form>
     </section>
 
-    <section class="card">
+    <section class="card card-lista-salas">
         <div class="secao-titulo">
             <h2>Salas cadastradas</h2>
             <span class="contador">{{ salas|length }}</span>

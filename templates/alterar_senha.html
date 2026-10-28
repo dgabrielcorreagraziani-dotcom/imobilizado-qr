@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme-preference="{{ session.get('tema_usuario', 'system') }}" data-authenticated="true" style="--accent: {{ session.get('cor_botao', '#007aff') }}; --button-text: {{ session.get('cor_botao_texto', '#ffffff') }};">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Alterar senha | Imobilizado QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261028-institucional3') }}">
+    <script src="{{ url_for('static', filename='app.js', v='20261028-security2') }}" defer></script>
+</head>
+<body>
+<main class="container tela-acesso">
+    <header class="cabecalho">
+        <span class="subtitulo">SEGURANÇA DA CONTA</span>
+        <h1>Alterar senha</h1>
+        {% if session.get('senha_deve_alterar') %}
+            <p>Você entrou com uma senha temporária. Crie uma senha nova para continuar.</p>
+        {% else %}
+            <p>Confirme sua senha atual e escolha uma senha nova com pelo menos 12 caracteres.</p>
+        {% endif %}
+    </header>
+
+    <div class="notificacoes" aria-live="polite">
+        {% for mensagem in get_flashed_messages() %}
+            <div class="notificacao" role="status"><span>{{ mensagem }}</span></div>
+        {% endfor %}
+    </div>
+
+    <section class="card">
+        <form action="{{ url_for('alterar_senha_propria') }}" method="POST" class="form-stack">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="senha-atual">Senha atual ou temporária</label>
+            <input id="senha-atual" name="senha_atual" type="password" autocomplete="current-password" required>
+            <label for="nova-senha">Nova senha (mínimo 12 caracteres)</label>
+            <input id="nova-senha" name="nova_senha" type="password" minlength="12" autocomplete="new-password" required>
+            <label for="confirmar-senha">Confirme a nova senha</label>
+            <input id="confirmar-senha" name="confirmar_senha" type="password" minlength="12" autocomplete="new-password" required>
+            <button type="submit">Salvar nova senha</button>
+        </form>
+        {% if not session.get('senha_deve_alterar') %}
+            <p class="ajuda"><a href="{{ url_for('minha_conta') }}">Voltar à minha conta</a></p>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>
